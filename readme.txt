@@ -6,3 +6,6 @@ Versão 0.01
 Versão 0.02
     - União dos projetos em apenas 01
 
+Versão 1.0
+    - Projeto executa microservice em veículos - Não há migração.
+

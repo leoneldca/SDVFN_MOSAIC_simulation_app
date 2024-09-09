@@ -31,13 +31,13 @@ public class ControllerServerMsg extends GenericV2xMessage {
      * inside the message and sends it to every possible receiver.
      */
     private final String serviceStrData;
-    private final EncodedPayload payload;
+    private final EncodedPayload encodedPayload;
     private final static long minLen = 128L;
 
     //método construtor da classe
     public ControllerServerMsg(MessageRouting routing, String serviceStrData) {
         super(routing,serviceStrData);
-        payload = new EncodedPayload(16L, minLen);
+        encodedPayload = new EncodedPayload(16L, minLen);
         this.serviceStrData = serviceStrData;
         
     }
@@ -45,7 +45,7 @@ public class ControllerServerMsg extends GenericV2xMessage {
     @Nonnull
     @Override
     public EncodedPayload getPayLoad() {
-        return payload;
+        return encodedPayload;
     }
 
     /* (non-Javadoc)

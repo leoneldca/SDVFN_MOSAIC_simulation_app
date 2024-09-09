@@ -140,7 +140,7 @@ public class CarCamSendingApp extends ConfigurableApplication<VehicleConfig,Vehi
 
     @Override
     public void onShutdown() {
-        getLog().infoSimTime(this, "Tear down");
+        getLog().infoSimTime(this, "Final de aplicação de transmissão de CAMs");
     }
 
     @Override

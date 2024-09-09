@@ -22,7 +22,7 @@ public class DynamicVehicleMap {
         }
         vehicleInfo = vehiclesMap.get(mappedMsg.get("vhId"));
         vehicleInfo.updateVehicleData(mappedMsg);
-
+        //cria o evento para daqui 5 segundos passando como parâmetro a referência para o vehicleInfo.
     }
 
     public Boolean isRsuRecordedToService(String vhId, String service){

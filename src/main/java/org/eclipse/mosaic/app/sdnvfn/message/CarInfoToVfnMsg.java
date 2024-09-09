@@ -17,7 +17,6 @@ package org.eclipse.mosaic.app.sdnvfn.message;
 
 import org.eclipse.mosaic.lib.objects.v2x.EncodedPayload;
 import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
-import org.eclipse.mosaic.lib.objects.v2x.V2xMessage;
 
 import javax.annotation.Nonnull;
 import java.lang.String;
@@ -26,20 +25,20 @@ import java.lang.String;
  * Class used as message for inter vehicle communication in contrast
  * to the intra vehicle communication.
  */
-public class CarInfoToVfnMsg extends V2xMessage {
+public class CarInfoToVfnMsg extends GenericV2xMessage {
     
     /**
      * Example payload. The sender puts its geo location
      * inside the message and sends it to every possible receiver.
      */
     private final String vehicleStrData;
-    private final EncodedPayload payload;
+    private final EncodedPayload encodedPayload;
     private final static long minLen = 128L;
 
     //método construtor da classe
     public CarInfoToVfnMsg(MessageRouting routing, String vehicleStrData) {
-        super(routing);
-        payload = new EncodedPayload(16L, minLen);
+        super(routing,vehicleStrData);
+        encodedPayload = new EncodedPayload(16L, minLen);
         this.vehicleStrData = vehicleStrData;
         
     }
@@ -47,7 +46,7 @@ public class CarInfoToVfnMsg extends V2xMessage {
     @Nonnull
     @Override
     public EncodedPayload getPayLoad() {
-        return payload;
+        return encodedPayload;
     }
 
     /* (non-Javadoc)

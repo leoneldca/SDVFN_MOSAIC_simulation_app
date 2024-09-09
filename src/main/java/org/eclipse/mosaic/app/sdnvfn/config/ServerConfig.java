@@ -24,5 +24,28 @@ public class ServerConfig {
 
     public ArrayList<String> commonServiceList = new ArrayList<>();
     public ArrayList<String> specificServiceList = new ArrayList<>();
+    public String rsuInitialRunner;
+    public String beaconMsgType;
+    public String carBeaconType;
+    public String vfnServiceMsgType;
+    public String rsuRunnerMsgType;
+    public String openFlowMsgType;
+    public String openFlowPacketInMsg;
+    public String openFlowPacketOutMsg;
+    public String openFlowFlowMod;
+
+    public String serverAddress;
+    public String serverName;
+    public String netMask;
+    public String vehicleNet;
+    public String rsuNet;
+    public String tlNet;
+    public String csNet;
+    public String serverNet;
+    public String tmcNet;
+    public ArrayList<String> rsusConnections;
+    public ArrayList<String> rsusPositions;
+    public String fcnDistributionType;
+    public ArrayList<String> fcnList;
 
 }

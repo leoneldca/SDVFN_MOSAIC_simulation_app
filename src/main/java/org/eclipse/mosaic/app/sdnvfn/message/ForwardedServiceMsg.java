@@ -33,13 +33,13 @@ ForwardedServiceMsg extends V2xMessage {
      * inside the message and sends it to every possible receiver.
      */
     private final String serviceStrData;
-    private final EncodedPayload payload;
+    private final EncodedPayload encodedPayload;
     private final static long minLen = 128L;
 
     //método construtor da classe
     public ForwardedServiceMsg(MessageRouting routing, String serviceStrData) {
         super(routing);
-        payload = new EncodedPayload(16L, minLen);
+        encodedPayload = new EncodedPayload(16L, minLen);
         this.serviceStrData = serviceStrData;
         
     }
@@ -47,7 +47,7 @@ ForwardedServiceMsg extends V2xMessage {
     @Nonnull
     @Override
     public EncodedPayload getPayLoad() {
-        return payload;
+        return encodedPayload;
     }
 
     /* (non-Javadoc)

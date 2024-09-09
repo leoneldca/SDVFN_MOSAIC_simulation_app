@@ -15,7 +15,7 @@ public class GenericV2xMessage extends V2xMessage {
     private final String msgStrData;
     private final EncodedPayload payload;
     private final static long minLen = 128L;
-    private final HashMap<String,String> mappedV2xMsg = new HashMap<>();
+    public final HashMap<String,String> mappedV2xMsg = new HashMap<>();
 
     public GenericV2xMessage(MessageRouting routing,String msgStrData) {
         super(routing);
@@ -47,10 +47,24 @@ public class GenericV2xMessage extends V2xMessage {
         sb.append('}');
         return sb.toString();
     }
+    public String getMsgType(){
+        return this.mappedV2xMsg.get("msgType");
+    }
+
+    public String getUnitDestId(){
+        return this.mappedV2xMsg.get("unitDestId");
+    }
+
+    public String getRsuAPId(){
+        return this.mappedV2xMsg.get("rsuId");
+    }
+
 
     public String getCoreMsg(){
         return this.msgStrData.toString();
     }
+
+
 
     public void generateMappedMsg(){
         this.mappedV2xMsg.clear();

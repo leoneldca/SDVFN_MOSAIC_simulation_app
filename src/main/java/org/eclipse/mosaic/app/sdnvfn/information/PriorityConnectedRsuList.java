@@ -16,6 +16,11 @@ public class PriorityConnectedRsuList {
     }
 
     //Fazer método de update da lista com o cálculo da distância dos veículos.
+
+    /**
+     *
+     * @param announcedRsu
+     */
     public void insertAnnouncedRsu(RsuAnnouncedInfo announcedRsu){
         boolean rsuFound = false;
         if(!this.priorityRsuList.isEmpty()){
@@ -35,8 +40,8 @@ public class PriorityConnectedRsuList {
             //apenas adicionar o RSU na lista de RSUs conectados
             RsuAnnouncedInfo newRsuInfo = new RsuAnnouncedInfo(
                     announcedRsu.getRsuId(),
-                    announcedRsu.getLatitude(),
-                    announcedRsu.getLongitude()
+                    announcedRsu.getLatRsu(),
+                    announcedRsu.getLongRsu()
             );
             newRsuInfo.setDistanceToVehicle(announcedRsu.getDistanceToVehicle());
             newRsuInfo.setBeaconArrivedTime(announcedRsu.getBeaconArrivedTime());

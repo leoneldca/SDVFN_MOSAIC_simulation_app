@@ -25,6 +25,8 @@ public class VehicleConfig {
     public Integer defautMsgHops;
     public ArrayList<String> vehicleServiceList = new ArrayList<>();
     public String rsuAccessPointId;
-
+    public String rsuNet;
+    public String serviceResultMsgType;
+    public String vfnServiceMsgType;
 
 }

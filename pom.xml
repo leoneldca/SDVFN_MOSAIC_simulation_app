@@ -37,6 +37,27 @@
             <version>24.0.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+	<dependency>
+            <groupId>org.jheaps</groupId>
+            <artifactId>jheaps</artifactId>
+	    <version>0.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apfloat</groupId>
+            <artifactId>apfloat</artifactId>
+	    <version>1.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.junit-toolbox</groupId>
+            <artifactId>junit-toolbox</artifactId>
+	    <version>2.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
        
 </project>

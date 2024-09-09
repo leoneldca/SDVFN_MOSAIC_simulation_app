@@ -15,16 +15,18 @@
 
 package org.eclipse.mosaic.app.sdnvfn;
 
+import org.eclipse.mosaic.app.sdnvfn.config.RsuConfig;
 import org.eclipse.mosaic.app.sdnvfn.message.RsuBeaconV2xMsg;
 import org.eclipse.mosaic.app.sdnvfn.message.CarInfoToVfnMsg;
 import org.eclipse.mosaic.app.sdnvfn.message.VfnServiceMsg;
 import org.eclipse.mosaic.app.sdnvfn.message.VfnServiceResultMsg;
+import org.eclipse.mosaic.app.sdnvfn.network.CommunicationInterface;
 import org.eclipse.mosaic.app.sdnvfn.utils.MsgUtils;
-import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.AdHocModuleConfiguration;
+import org.eclipse.mosaic.app.sdnvfn.utils.IntraUnitAppInteractor;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
-import org.eclipse.mosaic.fed.application.app.AbstractApplication;
+import org.eclipse.mosaic.fed.application.app.ConfigurableApplication;
 import org.eclipse.mosaic.fed.application.app.api.Application;
 import org.eclipse.mosaic.fed.application.app.api.CommunicationApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.RoadSideUnitOperatingSystem;
@@ -45,31 +47,38 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * This is a simple application that reads received V2X messages and logs either the user tagged value if the received message was a CAM
- * or the message type and source name if it wasn't a CAM.
+ * Aplicação de trabalha como um módulo de rede para o envio de dados
  */
-public class RsuAdHocMsgExchangeApp extends AbstractApplication<RoadSideUnitOperatingSystem> implements CommunicationApplication {
-
+public class RsuAdHocMsgExchangeApp extends ConfigurableApplication<RsuConfig,RoadSideUnitOperatingSystem> implements CommunicationApplication {
 
     private final static long BEACON_TIME_INTERVAL = TIME.SECOND;
     private List<? extends Application> applicationList;
-
     private HashMap<String,Application> appMap;
+    private RsuConfig rsuConfig;
+    private IntraUnitAppInteractor applicationsInteractor;
+
+    private CommunicationInterface communicationInterface;
+
+    public RsuAdHocMsgExchangeApp() {
+        super(RsuConfig.class, "RsuConfiguration");
+    }
 
     /**
-     * We should enable ad hoc module here to be able to receive messages that were sent per ad hoc
+     *
      */
     @Override
     public void onStartup() {
-        getLog().infoSimTime(this, "Enabling Adhoc Module in {} ",getOs().getId());
-        getOs().getAdHocModule().enable(new AdHocModuleConfiguration()
-                .addRadio()
-                .channel(AdHocChannel.CCH).distance(50.0).create()
-        );
-        getLog().infoSimTime(this, "Enabling Cell Module in {} ",getOs().getId());
-        getOs().getCellModule().enable();
 
-        this.applicationList = getOs().getApplications();
+        this.rsuConfig = this.getConfiguration();  //load ConfigFile into config object
+        communicationInterface = new CommunicationInterface(this);
+        getLog().infoSimTime(this, "Enabling Adhoc Module in {} ",getOs().getId());
+        communicationInterface.createAdHocInterface(this.rsuConfig.radioRange,AdHocChannel.CCH);
+        getLog().infoSimTime(this, "Enabling Cell Module in {} ",getOs().getId());
+        communicationInterface.createCellInterface();
+
+        applicationsInteractor = new IntraUnitAppInteractor(this);
+
+        this.applicationList = this.getOs().getApplications();
         this.appMap = new HashMap<>();
         this.convertAppListToMap();
         //Rsu beacon to adhoc network

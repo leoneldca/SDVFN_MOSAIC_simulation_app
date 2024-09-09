@@ -8,7 +8,7 @@ import java.util.HashMap;
 /**
  * Class that represents the processor list of each RSU in a Vehicular Fog Network
  */
-public class ServiceReplicationList {
+public class VfnServiceReplicationHandler {
     private final HashMap<String, ArrayList<String>> microserviceReplicationMap = new HashMap<>();
 
     private @Nullable ArrayList<String> getRsuListOfservice(String serviceId){

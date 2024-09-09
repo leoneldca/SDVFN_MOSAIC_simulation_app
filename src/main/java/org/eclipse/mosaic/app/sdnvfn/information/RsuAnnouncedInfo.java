@@ -1,24 +1,21 @@
 package org.eclipse.mosaic.app.sdnvfn.information;
 
+import org.eclipse.mosaic.app.sdnvfn.utils.NodesUtils;
+import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 import org.jetbrains.annotations.NotNull;
-
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.util.HashMap;
 
 public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
     private String rsuId;
-    private Double latitude;
-    private Double longitude;
+    private Double latRsu;
+    private Double longRsu;
     private Double distanceToVehicle;
-
     private long beaconArrivedTime;
 
-    public RsuAnnouncedInfo(String rsuId, Double latitude, Double longitude) {
+    public RsuAnnouncedInfo(String rsuId, Double latRsu, Double longRsu) {
         this.setRsuId(rsuId);
-        this.setLatitude(latitude);
-        this.setLongitude(longitude);
-        this.setDistanceToVehicle(0D);
+        this.setLatRsu(latRsu);
+        this.setLongRsu(longRsu);
+        this.setDistanceToVehicle(Double.MAX_VALUE);
     }
 
     public Double getDistanceToVehicle() {
@@ -27,12 +24,11 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
 
 
 
-    public void setDistanceToVehicle(Double vehicleLatitude, Double vehicleLongitude){
-        Double dLatitude = this.latitude - vehicleLatitude;
-        Double dLongitude = this.longitude - vehicleLongitude;
+    public void setDistanceToVehicle(double latVehicle, double longVehicle){
 
-        this.distanceToVehicle = Math.sqrt(dLatitude*dLatitude + dLongitude*dLongitude);
-
+        this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(
+                new MutableGeoPoint(latVehicle,longVehicle),
+                new MutableGeoPoint(this.latRsu,this.longRsu));
     }
 
     public void setDistanceToVehicle(Double distanceToVehicle) {
@@ -43,24 +39,24 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
         return this.rsuId;
     }
 
-    public Double getLatitude() {
-        return this.latitude;
+    public Double getLatRsu() {
+        return this.latRsu;
     }
 
-    public Double getLongitude() {
-        return this.longitude;
+    public Double getLongRsu() {
+        return this.longRsu;
     }
 
     public void setRsuId(String rsuId) {
         this.rsuId = rsuId;
     }
 
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
+    public void setLatRsu(Double latRsu) {
+        this.latRsu = latRsu;
     }
 
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
+    public void setLongRsu(Double longRsu) {
+        this.longRsu = longRsu;
     }
 
     public void setBeaconArrivedTime(long beaconArrivedTime){

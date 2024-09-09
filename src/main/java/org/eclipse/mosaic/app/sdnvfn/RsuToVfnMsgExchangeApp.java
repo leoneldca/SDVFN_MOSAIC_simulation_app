@@ -182,12 +182,10 @@ public class RsuToVfnMsgExchangeApp extends AbstractApplication<RoadSideUnitOper
     }
 
     public void sendRsuRunnerRequest (VfnServiceMsg v2xVfnServiceMsg){
-        String[] splitedStr = v2xVfnServiceMsg.toString().split("#");
-        String coreMsg = "#"+splitedStr[1]+"#";
         final MessageRouting routing = getOs().getCellModule().createMessageRouting()
                 .protocol(ProtocolType.TCP)
                 .topoCast(this.serverName);
-        getOs().getCellModule().sendV2xMessage(new VfnServiceMsg(routing, coreMsg));
+        getOs().getCellModule().sendV2xMessage(new VfnServiceMsg(routing, v2xVfnServiceMsg.getCoreMsg()));
 
     }
 

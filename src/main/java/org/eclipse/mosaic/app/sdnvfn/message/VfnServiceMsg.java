@@ -17,7 +17,6 @@ package org.eclipse.mosaic.app.sdnvfn.message;
 
 import org.eclipse.mosaic.lib.objects.v2x.EncodedPayload;
 import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
-import org.eclipse.mosaic.lib.objects.v2x.V2xMessage;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -34,26 +33,26 @@ public final class VfnServiceMsg extends GenericV2xMessage {
      */
     private final String serviceStrData;
 
-    private final EncodedPayload payload;
+    private final EncodedPayload encodedPayload;
     private final static long minLen = 128L;
 
     //método construtor da classe
     public VfnServiceMsg(MessageRouting routing, String serviceStrData) {
         super(routing,serviceStrData);
-        payload = new EncodedPayload(16L, minLen);
+        encodedPayload = new EncodedPayload(16L, minLen);
         this.serviceStrData = serviceStrData;
         
     }
     public VfnServiceMsg(MessageRouting routing, HashMap<String, String> mappedV2xMsg){
         super(routing,mappedV2xMsg);
-        payload = new EncodedPayload(16L, minLen);
+        encodedPayload = new EncodedPayload(16L, minLen);
         this.serviceStrData = this.getMsgFromStrHashMap(mappedV2xMsg);
     }
 
     @Nonnull
     @Override
     public EncodedPayload getPayLoad() {
-        return payload;
+        return encodedPayload;
     }
 
     /* (non-Javadoc)
@@ -71,4 +70,7 @@ public final class VfnServiceMsg extends GenericV2xMessage {
     }
 
 
+    public String getServiceId(){
+        return this.mappedV2xMsg.get("serviceId");
+    }
 }
