@@ -1,0 +1,71 @@
+<component name="libraryTable">
+  <library name="mosaic-22">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../../.." />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../LibnettyTest/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../RoadSideUnitApps_Backup/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../ServerApps_Backup/src" />
+      <root url="file://$PROJECT_DIR$/../VehiclesAppBroadcastVersion_Backup/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../VehicularFogApp (cópia)/src/main/java" />
+      <root url="file://$PROJECT_DIR$/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../camDisseminationApp/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/example-applications/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/highway-management/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/LibnettyTest/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/RoadSideUnitApps_Backup/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/ServerApps_Backup/src" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/VehiclesAppBroadcastVersion_Backup/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/VehicularFogApp/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/camDisseminationApp/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/lib/openflowj/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/leonel-apps/lib/openflowj/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/traffic-light-communication/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/weather-warning/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../tutorials/weather-warning/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-application/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-application/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-cell/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-cell/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-environment/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-environment/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-mapping/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-mapping/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-ns3/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-omnetpp/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-output/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-output/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-sns/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-sns/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-sumo/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../fed/mosaic-sumo/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-communication/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-communication/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-database/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-database/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-docker/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-docker/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-geomath/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-geomath/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-interactions/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-interactions/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-network/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-network/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-objects/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-objects/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-routing/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-routing/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-utils/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../lib/mosaic-utils/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../rti/mosaic-rti-api/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../rti/mosaic-rti-api/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../rti/mosaic-rti-core/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../rti/mosaic-rti-core/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../rti/mosaic-starter/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../../../rti/mosaic-starter/src/test/java" />
+      <root url="file://$PROJECT_DIR$/../../../test/mosaic-integration-tests/src/test/java" />
+    </SOURCES>
+  </library>
+</component>
