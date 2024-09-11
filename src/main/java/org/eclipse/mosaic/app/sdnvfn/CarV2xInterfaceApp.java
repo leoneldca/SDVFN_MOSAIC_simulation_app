@@ -19,7 +19,6 @@ import org.eclipse.mosaic.app.sdnvfn.config.VehicleConfig;
 import org.eclipse.mosaic.app.sdnvfn.information.PriorityConnectedRsuList;
 import org.eclipse.mosaic.app.sdnvfn.information.RsuAnnouncedInfo;
 import org.eclipse.mosaic.app.sdnvfn.message.GenericV2xMessage;
-import org.eclipse.mosaic.app.sdnvfn.message.VfnServiceResultMsg;
 import org.eclipse.mosaic.app.sdnvfn.utils.IntraUnitAppInteractor;
 import org.eclipse.mosaic.app.sdnvfn.utils.NetUtils;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
@@ -33,15 +32,12 @@ import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
 import org.eclipse.mosaic.lib.enums.AdHocChannel;
 import org.eclipse.mosaic.lib.objects.v2x.etsi.Cam;
-import org.eclipse.mosaic.lib.objects.v2x.etsi.cam.AwarenessData;
-import org.eclipse.mosaic.lib.objects.v2x.etsi.cam.VehicleAwarenessData;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
 import org.eclipse.mosaic.rti.TIME;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -56,7 +52,7 @@ import javax.annotation.Nullable;
  */
 public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,VehicleOperatingSystem> implements VehicleApplication, CommunicationApplication {
 
-    private final PriorityConnectedRsuList rsuPriorityList = new PriorityConnectedRsuList();
+    private PriorityConnectedRsuList rsuPriorityList;
     private IntraUnitAppInteractor intraUnitAppInteractor;
 
     private String rsuAccessPoint;
@@ -77,6 +73,7 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
         intraUnitAppInteractor = new IntraUnitAppInteractor(this);
         this.rsuAccessPoint = "null";
         this.lastReceivedBeaconTime = 0L;
+        rsuPriorityList = new PriorityConnectedRsuList(vehicleConfig);
 
         getLog().infoSimTime(this, "Setting up Vehicle");
         NetUtils.createAdHocInterface(this,this.vehicleConfig.radioRange,AdHocChannel.CCH); //cria uma interface adhoc para trabalhar no canal CCH
@@ -106,29 +103,31 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
                 //Ao receber uma mensagem de beacon, definir qual o RSU escolhido e atualizar a aplicação em caso de mudança.
                 getOs().requestVehicleParametersUpdate().changeColor(Color.ORANGE).apply();
                 this.lastReceivedBeaconTime = getOs().getSimulationTime();
-                //getLog().infoSimTime(this, "-----\n\n\n{} msg from {}: {}", msg.getSimpleClassName(), msg.getRouting().getSource().getSourceName(),msg.toString());
-                //getLog().infoSimTime(this, "{}, {}", msg.getSimpleClassName(), msg.getRouting().getSource().getSourceName());
+
+                //atualiza as distâncias veículo para todos os RSUs da lista de prioridades, reordenando a lista
+                //rsuPriorityList.updateRsuDistances(Objects.requireNonNull(getOs().getVehicleData()).getPosition().getLatitude(),getOs().getVehicleData().getPosition().getLongitude());
+
+                //Cria um objeto da Classe RsuAnnoucedInfo para representar o rsu sendo anunciado
                 RsuAnnouncedInfo rsuInfo = new RsuAnnouncedInfo(
                         msg.mappedV2xMsg.get("rsuId"),
                         Double.parseDouble(msg.mappedV2xMsg.get("latitude")),
                         Double.parseDouble(msg.mappedV2xMsg.get("longitude"))
                 );
-                //getLog().infoSimTime(this,"Beacon recebido de RSU: {}",rsuInfo.getRsuId());
-                //adicionar o RSU emissor da mensagem para a lista de RSUs
-                //getLog().info("ReceiverInfo: "+receivedV2xMessage.getReceiverInformation().toString());
-                //getLog().info("ReceiverInfo: "+receivedV2xMessage.getReceiverInformation().getReceiveSignalStrength());
-                rsuInfo.setDistanceToVehicle(getOs().getVehicleData().getPosition().getLatitude(), getOs().getVehicleData().getPosition().getLongitude());
-                //getLog().info("Distancia do RSU para o Veículo: "+rsuInfo.getDistanceToVehicle().toString());
                 rsuInfo.setBeaconArrivedTime(this.lastReceivedBeaconTime);
-                this.rsuPriorityList.updateRsuDistances(Objects.requireNonNull(getOs().getVehicleData()).getPosition().getLatitude(),getOs().getVehicleData().getPosition().getLongitude());
-                rsuPriorityList.insertAnnouncedRsu(rsuInfo);
+                //Calcula a distância do veículo para o RSU remetente do beacon de RSU.
+                //rsuInfo.setDistanceToVehicle(getOs().getVehicleData().getPosition().getLatitude(), getOs().getVehicleData().getPosition().getLongitude());
+
+                //Calcula a headingDiference entre o heading real do veículo com o heading necessário para ir ao encontro do RSU
+                //rsuInfo.setHeadingDiferenceToVehicle(getOs().getVehicleData());
+                //Insere os dados do RSU na lista de prioridades. A inserção reordena e remove o mais longe se ultrapassar 5 RSUs
+                rsuPriorityList.updatePriotyList(rsuInfo, getOs().getVehicleData());
                 //getLog().infoSimTime(this,"List of near known RSU of vehicle {}:", getOs().getId());
                 /*for (RsuAnnouncedInfo rsu : this.rsuPriorityList.getRsuList()) {
                     getLog().info("RSU ID: {} at cartesian distance: {}",rsu.getRsuId(),rsu.getDistanceToVehicle());
                 }*/
-                //getLog().info("--------------------------");
 
                 if(!rsuPriorityList.getRsuList().isEmpty()){
+                    //Critérios para trocar de RSU_AP
                     if(!Objects.equals(rsuPriorityList.getRsuList().getFirst().getRsuId(), this.rsuAccessPoint) || getOs().getSimulationTime()>(this.lastReceivedBeaconTime+3*TIME.SECOND) ){
                         this.rsuAccessPoint = rsuPriorityList.getRsuList().getFirst().getRsuId();
                         getLog().infoSimTime(this,"new_RSU-AP: {}",this.rsuAccessPoint);

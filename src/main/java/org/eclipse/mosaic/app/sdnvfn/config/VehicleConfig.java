@@ -28,5 +28,8 @@ public class VehicleConfig {
     public String rsuNet;
     public String serviceResultMsgType;
     public String vfnServiceMsgType;
+    public Float maxHeadingDifference;
+    public Float headingDiferenceWeigth;
+    public Float fixedVirtualSpeed;
 
 }

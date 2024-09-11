@@ -12,7 +12,7 @@ public class RsuPredictor {
 
     private HashMap<String, MutableGeoPoint> rsuPositionMap;
     private VfnConnectedVehicle connectedVehicle;
-    private static final int MAX_HEADING_DIFFERENCE = 45;
+    private static final int MAX_HEADING_DIFFERENCE = 120;
     private static final float HEADING_DIFFERENCE_WEIGHT = 0F;
 
 
