@@ -7,6 +7,7 @@ import org.eclipse.mosaic.fed.application.app.api.OperatingSystemAccess;
 import org.eclipse.mosaic.fed.application.app.api.os.OperatingSystem;
 import org.eclipse.mosaic.lib.objects.v2x.etsi.Cam;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
+import org.eclipse.mosaic.rti.TIME;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -36,24 +37,24 @@ public class IntraUnitAppInteractor {
 
     public void sendV2xMsgToApp(@NotNull GenericV2xMessage v2xMessage, Class appClass){
         //Comunicando com outra aplicação via EventProcess
-        final Event sendIntraUnitMsg = new Event(this.unitOsAccess.getOs().getSimulationTime(),this.appMap.get(appClass.getName()),v2xMessage);
+        final Event sendIntraUnitMsg = new Event(this.unitOsAccess.getOs().getSimulationTime()+TIME.MILLI_SECOND*2,this.appMap.get(appClass.getName()),v2xMessage);
         this.unitOsAccess.getOs().getEventManager().addEvent(sendIntraUnitMsg);
     }
 
     public void sendStrToApp(String strMsg, Class appClass){
         //Comunicando com outra aplicação via EventProcess
-        final Event sendIntraUnitMsg = new Event(unitOsAccess.getOs().getSimulationTime(),this.appMap.get(appClass.getName()),strMsg);
+        final Event sendIntraUnitMsg = new Event(unitOsAccess.getOs().getSimulationTime()+TIME.MILLI_SECOND*2,this.appMap.get(appClass.getName()),strMsg);
         this.unitOsAccess.getOs().getEventManager().addEvent(sendIntraUnitMsg);
     }
 
     public void sendRsuAnnouncedInfoToApp(RsuAnnouncedInfo rsuAnnouncedInfo,Class appClass){
-        final Event event = new Event(unitOsAccess.getOs().getSimulationTime(),this.appMap.get(appClass.getName()), rsuAnnouncedInfo);
+        final Event event = new Event(unitOsAccess.getOs().getSimulationTime()+TIME.MILLI_SECOND*2,this.appMap.get(appClass.getName()), rsuAnnouncedInfo);
         this.unitOsAccess.getOs().getEventManager().addEvent(event);
     }
 
     public void sendCamMsgToApp(Cam camMessage, Class appClass){
         //Comunicando com outra aplicação via EventProcess
-        final Event sendIntraUnitMsg = new Event(this.unitOsAccess.getOs().getSimulationTime(),this.appMap.get(appClass.getName()),camMessage);
+        final Event sendIntraUnitMsg = new Event(this.unitOsAccess.getOs().getSimulationTime()+TIME.MILLI_SECOND*2,this.appMap.get(appClass.getName()),camMessage);
         this.unitOsAccess.getOs().getEventManager().addEvent(sendIntraUnitMsg);
     }
 

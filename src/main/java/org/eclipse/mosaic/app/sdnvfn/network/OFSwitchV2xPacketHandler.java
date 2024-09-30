@@ -36,7 +36,7 @@ public class OFSwitchV2xPacketHandler {
         HashMap<String,String> mappedEntryActions = new HashMap<>();
         HashMap<String,String> mappedMsgMatchingFields = this.getMsgMatchingFields(v2xMessage); //carrega as matching fields da mensagem
 
-        //percorrendo tabela de fluxos
+        //percorrendo tabela de fluxos (FlowTable)
         boolean match = false;
         for(ArrayList<String> flowEntry: this.flowTable.getFlowTable()){
             //para cada flowEntry mapear os matchingFields e actions deste FlowEntry

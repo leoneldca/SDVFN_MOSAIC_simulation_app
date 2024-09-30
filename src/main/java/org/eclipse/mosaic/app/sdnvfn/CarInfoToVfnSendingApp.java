@@ -39,16 +39,16 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
         communicationInterface = new CommunicationInterface(this);
         this.vhId = getOs().getId();
 
-        //getLog().infoSimTime(this, "Activating Adhoc Communication");
+        getLog().infoSimTime(this, "Activating Adhoc Communication");
         // Ativação do módulo de comunicação Adhoc
         communicationInterface.createAdHocInterface(this.vehicleConfig.radioRange,AdHocChannel.CCH);
-        schedulingInfoSending();//está comentada
+
     }
 
     public void schedulingInfoSending() {
         Event event = new Event(getOs().getSimulationTime() + MESSAGE_TIME_INTERVAL, this,"send");
         getOs().getEventManager().addEvent(event);
-        //getLog().info("Evento de envio de mensagens foi criado com Sucesso");
+
     }
 
 
@@ -58,26 +58,20 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
         Object resource = event.getResource();
         if(resource instanceof String){
             String msg = (String) resource;
-            if(msg.startsWith("rsu_")){
-                //change the RSU V2X message receiver.
-                getLog().info("recebi informação do RSU via String");
-                rsuAccessPointId = msg;
-                schedulingInfoSending();
-            }
             if(msg.equals("send")){
 
                 if(!Objects.equals(this.rsuAccessPointId, "null")) {
-                    sendInfoToVFN();
+                    //sendInfoToVFN();
                 }
-                schedulingInfoSending();
+                //schedulingInfoSending();
             }
         }else if(resource instanceof RsuAnnouncedInfo){
             RsuAnnouncedInfo rsuAnnouncedInfo = (RsuAnnouncedInfo) resource;
             this.rsuAccessPointId = rsuAnnouncedInfo.getRsuId();
-            schedulingInfoSending(); //enviar informação para a SDVFN para registrar a mudança
-            //sendInfoToVFN();
+            //schedulingInfoSending(); //enviar informação para a SDVFN para registrar a mudança
+            sendInfoToVFN(); //Envia dados do veículo para o novo RSU-AP
             //recebe a atualização da RSU AccessPoint por meio da aplicação CarV2xInterfaceApp
-            //getLog().info("recebi informação do RSU via Objeto RsuAnnouncedInfo");
+            getLog().info("recebi informação do RSU via Objeto RsuAnnouncedInfo: "+this.rsuAccessPointId);
         }
     }
 
@@ -86,9 +80,11 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
         final MessageRouting msgRoute = 
                 getOs().getAdHocModule().createMessageRouting().viaChannel(AdHocChannel.CCH).topoCast(rsuAccessPointId,this.vehicleConfig.defautMsgHops);
         final CarInfoToVfnMsg infoToFogMsg = new CarInfoToVfnMsg(msgRoute,vehicleStrData); //VehicleInfoToVfnMsg extends V2xMessage
-        communicationInterface.sendAdhocV2xMessage(infoToFogMsg);
-        //getOs().getAdHocModule().sendV2xMessage(infoToFogMsg);
-        //getLog().infoSimTime(this, "CarInfoToVfnMsg via {}", this.rsuAccessPointId);
+        //communicationInterface.sendAdhocV2xMessage(infoToFogMsg);
+        getOs().getAdHocModule().sendV2xMessage(infoToFogMsg);
+        getLog().infoSimTime(this, "CarInfoToVfnMsg to {}", this.rsuAccessPointId);
+
+
     }
 
     public String getVehicleStrData(){

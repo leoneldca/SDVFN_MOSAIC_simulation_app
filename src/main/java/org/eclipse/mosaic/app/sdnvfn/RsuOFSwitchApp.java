@@ -72,8 +72,9 @@ public class RsuOFSwitchApp extends ConfigurableApplication<RsuOFSwitchAppConfig
             ofPacketHandler.ofPacketReceiver(v2xMessage);
             //getLog().infoSimTime(this,"FLOW_TABLE_POS_MOD"+this.flowTable.toString());
         }else{
-            if(!Objects.equals(v2xMessage.getMsgType(), "rsuBeaconMsg"))
-                getLog().infoSimTime(this,"V2X Message: "+v2xMessage.toString());
+            if(!Objects.equals(v2xMessage.getMsgType(), "rsuBeaconMsg")) {
+                getLog().infoSimTime(this, "V2X Message: " + v2xMessage.toString()); //Beacons do RSU não são armazenados em Log
+            }
             v2xPacketHandler.packetMachingFunction(v2xMessage);
         }
     }
@@ -94,12 +95,12 @@ public class RsuOFSwitchApp extends ConfigurableApplication<RsuOFSwitchAppConfig
                 return;//Não processa recebimento de beacons de outros RSUs
             }
             if(Objects.equals(msg.getMsgType(), "serviceResultMsg")){
-                if(msg.getRouting().getDestination().getType().isAdHoc()){ //se o resultado é adhoc então deveria apenas esperar que veículos recebam
+                if(msg.getRouting().getDestination().getType().isAdHoc()){ //Se a mensagem recebida é um resultado que vem por uma comunicação Ad-hoc, então foi enviado por outro RSU e direcionado para outro
                     return;//Não processa recebimento de service result enviado para veículos
                 }
-                if(msg.getRouting().getDestination().getType().isCell() && !Objects.equals(msg.getRouting().getDestination().getAddress().getIPv4Address(), getOs().getAdHocModule().getSourceAddress().getIPv4Address())){ //se o resultado é adhoc
-                    return;//Não processa recebimento de service result enviado para veículos
-                }
+                /*if(msg.getRouting().getDestination().getType().isCell() && !Objects.equals(msg.getRouting().getDestination().getAddress().getIPv4Address(), getOs().getAdHocModule().getSourceAddress().getIPv4Address())){ //se o resultado é adhoc
+                    return;//
+                }*/
 
             }
 
@@ -116,8 +117,8 @@ public class RsuOFSwitchApp extends ConfigurableApplication<RsuOFSwitchAppConfig
 
 
     /**
-     * O processador de eventos do switch deve receber mensagens de aplicativos que desejam enviar mensagens pela rede.
-     * A função repassa a mensagem para o recebedor de pacotes
+     * O processador de eventos do switch deve receber mensagens de aplicativos(Intraunit) que desejam enviar mensagens pela rede.
+     * A função repassa a mensagem para o método recebedor de pacotes
      **/
     @Override
     public void processEvent(Event event) throws Exception {
@@ -126,7 +127,7 @@ public class RsuOFSwitchApp extends ConfigurableApplication<RsuOFSwitchAppConfig
         if(resource instanceof GenericV2xMessage){
             GenericV2xMessage v2xMessage = (GenericV2xMessage) resource;
             ///Enviar mensagem para a PacketMatchingFunction
-            this.packetReceiver(v2xMessage);
+            this.packetReceiver(v2xMessage);//recebimento de "IntraUnit Messages"
         }else{
             getLog().infoSimTime(this,"Switch não sabe como lidar com os dados redebidos");
         }

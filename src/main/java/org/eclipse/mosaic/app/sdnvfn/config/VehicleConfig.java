@@ -30,6 +30,9 @@ public class VehicleConfig {
     public String vfnServiceMsgType;
     public Float maxHeadingDifference;
     public Float headingDiferenceWeigth;
+    public Float maxHeadingDifferenceList1;
+    public Float maxHeadingDifferenceList2;
+    public int maxRsuListSize;
     public Float fixedVirtualSpeed;
 
 }

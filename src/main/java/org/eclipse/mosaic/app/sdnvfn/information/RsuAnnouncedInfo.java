@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
     private String rsuId;
-    private Double latRsu;
+    private Double lastRsu;
     private Double longRsu;
     private Double distanceToVehicle;
     private long beaconArrivedTime;
@@ -17,7 +17,7 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
 
     public RsuAnnouncedInfo(String rsuId, Double latRsu, Double longRsu) {
         this.setRsuId(rsuId);
-        this.setLatRsu(latRsu);
+        this.setLastRsu(latRsu);
         this.setLongRsu(longRsu);
         this.setDistanceToVehicle(Double.MAX_VALUE);
         this.headingDiferenceToVehicle = 360D;
@@ -45,7 +45,7 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
 
         this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(
                 new MutableGeoPoint(latVehicle,longVehicle),
-                new MutableGeoPoint(this.latRsu,this.longRsu));
+                new MutableGeoPoint(this.lastRsu,this.longRsu));
     }
 
     public Double getHeadingDiferenceToVehicle(){
@@ -57,7 +57,7 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
                 vehicleData.getHeading(),
                 vehicleData.getPosition().getLatitude(),
                 vehicleData.getPosition().getLongitude(),
-                this.getLatRsu(),
+                this.getLastRsu(),
                 this.getLongRsu()
         );
     }
@@ -70,8 +70,8 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
         return this.rsuId;
     }
 
-    public Double getLatRsu() {
-        return this.latRsu;
+    public Double getLastRsu() {
+        return this.lastRsu;
     }
 
     public Double getLongRsu() {
@@ -82,8 +82,8 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
         this.rsuId = rsuId;
     }
 
-    public void setLatRsu(Double latRsu) {
-        this.latRsu = latRsu;
+    public void setLastRsu(Double lastRsu) {
+        this.lastRsu = lastRsu;
     }
 
     public void setLongRsu(Double longRsu) {

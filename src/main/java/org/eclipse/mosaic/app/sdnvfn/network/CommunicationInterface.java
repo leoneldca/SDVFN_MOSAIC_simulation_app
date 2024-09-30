@@ -14,7 +14,7 @@ public class CommunicationInterface {
 
     OperatingSystemAccess<? extends OperatingSystem> unitOsAccess;
 
-    public CommunicationInterface(OperatingSystemAccess<? extends OperatingSystem> unitOsAccess) {
+    public CommunicationInterface(OperatingSystemAccess<? extends OperatingSystem> unitOsAccess){
         this.unitOsAccess = unitOsAccess;
     }
 
