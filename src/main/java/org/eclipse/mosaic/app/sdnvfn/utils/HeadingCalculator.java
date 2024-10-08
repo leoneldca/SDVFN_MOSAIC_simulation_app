@@ -38,7 +38,7 @@ public class HeadingCalculator {
         double headingDifference = realHeading - targetHeading;
 
         // Ajusta a diferença para o intervalo [-180, 180]
-        headingDifference = (headingDifference + 180) % 360 - 180;
+        headingDifference = Math.abs((headingDifference + 180) % 360 - 180);
 
         return headingDifference;
     }

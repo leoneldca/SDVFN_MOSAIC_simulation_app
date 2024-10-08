@@ -60,7 +60,8 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
     private RsuAnnouncedInfo rsuAP;
     private String strLastRsuAccessPoint;
     private List<PriorityConnectedRsuList> listOfRsuLists;
-    private final Float MAX_DISTANCE_FACTOR = 0.8F;
+    private final Float MAX_DISTANCE_FACTOR = 0.85F;
+    private final Float RANGE_FACTOR_TO_PREPARE_HANDOVER = 0.7F; //140 metros de distância
     private final Float MAX_HEADING_LIST1 = 45F;
     private final Float MAX_HEADING_LIST2 = 90F;
     private double lastDistanceDriven;
@@ -116,7 +117,7 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
 
                 getOs().requestVehicleParametersUpdate().changeColor(Color.ORANGE).apply();
                 this.lastReceivedBeaconTime = getOs().getSimulationTime();
-                getLog().infoSimTime(this,"Mensagem Recebida: "+receivedV2xMessage.toString());
+
 
                 //rsuPriorityList.updateRsuDistances(Objects.requireNonNull(getOs().getVehicleData()).getPosition().getLatitude(),getOs().getVehicleData().getPosition().getLongitude());
 
@@ -128,12 +129,25 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
                 rsuInfo.setBeaconArrivedTime(this.lastReceivedBeaconTime);
                 rsuInfo.setDistanceToVehicle(getOs().getVehicleData().getPosition().getLatitude(), getOs().getVehicleData().getPosition().getLongitude());//Calcula a distância do veículo para o RSU remetente do beacon de RSU.
                 rsuInfo.setHeadingDiferenceToVehicle(getOs().getVehicleData()); //Calcula a headingDiference entre o heading real do veículo com o heading necessário para ir ao encontro do RSU
+                getLog().infoSimTime(this,"RSU_Beacon: RsuId:{}, Distance:{}, Heading:{}, ArrivedTime:{} ",rsuInfo.getRsuId(),rsuInfo.getDistanceToVehicle(),rsuInfo.getHeadingDiferenceToVehicle(),rsuInfo.getBeaconArrivedTime());
+                if(rsuAP==null){
+                    try {
+                        rsuAP=(RsuAnnouncedInfo) rsuInfo.clone(); //Sem restrição quando o veículo estiver sem AP
+                    } catch (CloneNotSupportedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }else{//Se não é nulo então deve ser atualizado, completamente se for o mesmo ou atualizado distâncias e heading se for diferente
+                    if(Objects.equals(rsuAP.getRsuId(),rsuInfo.getRsuId())){
+                        try {
+                            rsuAP=(RsuAnnouncedInfo) rsuInfo.clone(); //Atualiza quando se trata do mesmo.
+                        } catch (CloneNotSupportedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }else{
+                        rsuAP.setDistanceToVehicle(getOs().getVehicleData().getPosition().getLatitude(), getOs().getVehicleData().getPosition().getLongitude());//Calcula a distância do veículo para o RSU remetente do beacon de RSU.
+                        rsuAP.setHeadingDiferenceToVehicle(getOs().getVehicleData()); //Calcula a headingDiference entre o heading real do veículo com o heading necessário para ir ao encontro do RSU
+                    }
 
-                if(rsuAP==null || Objects.equals(rsuAP.getRsuId(),rsuInfo.getRsuId())){
-                    rsuAP=rsuInfo; //Sem restrição quando o veículo estiver sem AP
-                }else{//Se não é nulo então deve ser atualizado, completo se for o mesmo ou atualizado distâncias e heading se for diferente
-                    rsuAP.setDistanceToVehicle(getOs().getVehicleData().getPosition().getLatitude(), getOs().getVehicleData().getPosition().getLongitude());//Calcula a distância do veículo para o RSU remetente do beacon de RSU.
-                    rsuAP.setHeadingDiferenceToVehicle(getOs().getVehicleData()); //Calcula a headingDiference entre o heading real do veículo com o heading necessário para ir ao encontro do RSU
                 }
 
                 if(rsuInfo.getDistanceToVehicle() <= vehicleConfig.radioRange*MAX_DISTANCE_FACTOR){
@@ -153,8 +167,8 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
                     getLog().infoSimTime(this,"new_RSU-AP: {}",this.strRsuAccessPoint);
                     this.sendElectedRsu(this.rsuAP);
 
-                }else{//se forem iguais, não houve mudança
-
+                }else{//RSUAP continuará sendo o mesmo,
+                    //getLog().infoSimTime(this,"Sem Mudança: {}",this.strRsuAccessPoint);
                 }
 
             }else
@@ -188,16 +202,17 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
         ||listOfRsuLists.get(1).getRsuList().size()!=0
         ||listOfRsuLists.get(2).getRsuList().size()!=0)
         && (this.rsuAP.getDistanceToVehicle()>vehicleConfig.radioRange*MAX_DISTANCE_FACTOR)
-        && (getOs().getVehicleData().getDistanceDriven()-lastDistanceDriven)>=20D
+        //&& (getOs().getVehicleData().getDistanceDriven()-lastDistanceDriven)>=20D //só espera os 20 metros iniciais
         && (this.rsuAP.getHeadingDiferenceToVehicle()>90D)){ //alguma lista deve não estar vazia, a distância não excedeu e veículo se deslocou+20metros realizar escolha ( que pode resultar no mesmo RSU_AP ou gerar a troca)
 
             if(listOfRsuLists.get(0).getRsuList().size()!=0){//se Lista 1 não está vazia, escolher da lista 1
-                rsuAP=listOfRsuLists.get(0).getRsuList().getLast();
+                rsuAP=listOfRsuLists.get(0).getRsuList().getFirst();
             }else if(listOfRsuLists.get(1).getRsuList().size()!=0){//senão, se lista 2 não está vazia, escolher da lista 2
                 rsuAP=listOfRsuLists.get(1).getRsuList().getFirst();
             }else if(listOfRsuLists.get(2).getRsuList().size()!=0){//senão, se lista 3 não está vazia, escolher da lista 3.
                 rsuAP=listOfRsuLists.get(2).getRsuList().getFirst();
             }
+            //lastDistanceDriven = getOs().getVehicleData().getDistanceDriven();//a proxima seleção deverá ser após
         }
     }
 
@@ -222,7 +237,15 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
 
     @Override
     public void onVehicleUpdated(@Nullable VehicleData previousVehicleData, @Nonnull VehicleData updatedVehicleData) {
-        //this.rsuPriorityList.updateRsuDistances(Objects.requireNonNull(getOs().getVehicleData()).getPosition().getLatitude(),getOs().getVehicleData().getPosition().getLongitude());
+
+        if(this.rsuAP!=null){
+            this.rsuAP.setDistanceToVehicle(updatedVehicleData.getPosition().getLatitude(),updatedVehicleData.getPosition().getLongitude());
+            if(this.rsuAP.getDistanceToVehicle()>(vehicleConfig.radioRange*RANGE_FACTOR_TO_PREPARE_HANDOVER)
+                    && (this.rsuAP.getHeadingDiferenceToVehicle()>90D)){
+
+                sendElectedRsu(rsuAP);
+            }
+        }
     }
     private void sendElectedRsu(RsuAnnouncedInfo rsuAnnouncedInfo){
         //Comunicando com outra aplicação via EventProcess

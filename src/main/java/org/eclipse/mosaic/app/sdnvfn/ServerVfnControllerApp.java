@@ -121,9 +121,16 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
 
         if(Objects.equals(v2xMessage.getMsgType(), this.srvConfig.openFlowMsgType)){
             //Mensagens OpenFlow
+            String rsuRunnerOfService;
+
+
             getLog().infoSimTime(this,"PacketIn:{}",v2xMessage.getCoreMsg());
             if(Objects.equals(v2xMessage.mappedV2xMsg.get("ofMsg"), srvConfig.openFlowPacketInMsg)){
                 ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(v2xMessage.getRsuAPId(),v2xMessage.getUnitDestId());
+                if(globalDynamicMap.getVfnVehiclesMap().containsKey(v2xMessage.getMappedMsg().get("vhId"))){
+                    rsuRunnerOfService = globalDynamicMap.getVfnVehiclesMap().get(v2xMessage.getMappedMsg().get("vhId")).getRsuOfservice(v2xMessage.getMappedMsg().get("serviceId"));
+                    sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,v2xMessage.getMappedMsg().get("vhId"),v2xMessage.getMappedMsg().get("serviceId"),rsuRunnerOfService);//envio de regras baseados em vehicle/service origem e RSU destino.
+                }
                 sdnController.sendRuleToRsuSwitch(pathToRunnerArray);
                 //Devolve a mensagem para o rsu que enviou
                 sdnController.sendPacketOut(v2xMessage);
@@ -160,7 +167,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             rsuRunnerOfService = connectedVehicle.getRsuOfservice(serviceId); //recupera o
             connectedVehicle.setActualRsuRunnerPath(sdnController.getPathToRsu(rsuApIdInMsg,rsuRunnerOfService)); //SDN Controller calcula o path entre o RSU-AP e o RSU-SERVICE-RUNNER
             connectedVehicle.setLastRsuApId(connectedVehicle.getRsuApId()); //Neste caso de primeira conexão, o lastRSU-AP será o mesmo do RSU-AP atual
-            connectedVehicle.setLastRsuRunnerPath(connectedVehicle.getActualRsuRunnerPath()); //Neste caso de primeira conexão, o lastPath será o mesmo do Path Atual
+            connectedVehicle.setLastRsuRunnerPath(connectedVehicle.getActualRsuRunnerPath()); //Neste caso de primeira conexão, o lastPath será o mesmo do Path Atual (Reference)
             connectedVehicle.setNextRsuApId(connectedVehicle.getRsuApId()); //Neste caso de primeira Conexão, o NextRSUAPId, será o mesmo do atual
             connectedVehicle.setNextRsuRunnerPath(connectedVehicle.getActualRsuRunnerPath()); //Neste caso de primeira Conexão, o nextpath será o mesmo do path atual
             ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(rsuApIdInMsg,rsuRunnerOfService);
@@ -202,7 +209,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             }
             sdnController.removeRsuSwitchServiceRule(strDifferenceNodeList,vhId,serviceId);
 
-        }
+        }//Se não entrou no If(condicional) então não houve handover
 
         connectedVehicle.setDistanceVhToRsu(this.rsuPositionsMap.get(rsuApIdInMsg));//Atualiza a distância para o RSU_AP
         String nextRsuAP = rsuPredictor.predictNextRsuToVehicle(connectedVehicle); //tendo havido ou não o handover, o predicted Next RSU é recalculado
@@ -246,146 +253,6 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
         //LogUtils.vehicleGDMLog(this,getLog(),this.globalDynamicMap.getVfnVehiclesMap(),"Dynamic_Vehicle_List");
 
     }
-
-
-    /**
-     * O método recebe mensagem de beacon de veículo.
-     * Mensagem é enviada pelo RSU-AP do veículo
-     * Utiliza os dados da mensagem e atualiza as informações do veículo na tabela GlobalDynamicMap
-     * Pode ter havido Handover de RSU-AP (Fica registrado pelo métdodo de atualização de da GlobaDynamicMap)
-     * Atualiza a distãncia entre o veículo e o RSU-AP vigente.
-     * realiza a predição de próximo RSU-AP e atualiz esta informação nos dados do veículo.
-     *
-     * @param v2xMessage Neste método a mensagem em questão é um beacon de veículo
-     */
-    public void vehicleBeaconMsgHandle(GenericV2xMessage v2xMessage){
-
-        String rsuAp = v2xMessage.getRouting().getSource().getSourceName();
-        getLog().info("Received_VehicleBeaconMessage_sent_by:{}",rsuAp);
-        String vhId = v2xMessage.mappedV2xMsg.get("vhId");
-
-        this.globalDynamicMap.addVehicleInfo(v2xMessage.mappedV2xMsg);//Atualização ou inserção de Dados do veículo no mapeamento
-        VfnConnectedVehicle connectedVehicle = this.globalDynamicMap.getVfnVehiclesMap().get(vhId);//Veículo cujos dados foram atualizados
-
-
-        connectedVehicle.setDistanceVhToRsu(this.rsuPositionsMap.get(connectedVehicle.getRsuApId()));
-        //Atualiza a distância para o RSU_AP de acordo com os dados vindos do veículo
-        String predictedNextRsuAP = rsuPredictor.predictNextRsuToVehicle(connectedVehicle);
-        String actualNextRsuAP = connectedVehicle.getNextRsuId();
-
-        if(!Objects.equals(predictedNextRsuAP,actualNextRsuAP)){ //Se há uma pevisão que é diferente da atual, atualiza os dados com a nova previsão.
-            connectedVehicle.setNextRsuApId(predictedNextRsuAP); //deve haver a atualização do path para o nextRSUAP.
-            if(!Objects.equals(connectedVehicle.getNextRsuId(), connectedVehicle.getRsuApId())){
-                ///Se há a PREVISÃO de migração para OUTRO RSU_AP, antecipa-se o envio de regras de encaminhamento para o RSU_RUNNER.
-                ///Quando não há consumo de serviço, a própria função bloqueia o envio de regras.
-                if(connectedVehicle.getServiceRsuMap().containsKey("service_01")){
-                    String rsuRunnerOfService = connectedVehicle.getRsuOfservice("service_01");
-                    connectedVehicle.setNextRsuRunnerPath(sdnController.getPathToRsu(connectedVehicle.getNextRsuId(),rsuRunnerOfService));
-                }
-                //sendRuleToPredictedRsu(connectedVehicle);
-            }
-        }
-
-        if(!Objects.equals(connectedVehicle.getRsuApId(), connectedVehicle.getLastRsuApId())){
-            //Se já houve a migração, deve-se remover do RSU_AP anterior a regra do tipo veículo/serviço
-            ArrayList<String> outOfPathRsuList = new ArrayList<>(); //Lista de RSUs que estão fora do novo caminho.
-            outOfPathRsuList.add(connectedVehicle.getLastRsuApId());
-            //Neste caso apenas será removida a regra do RSU_AP anterior,
-            // mas para que seja completo, deve-se realizar a diferença entre o caminho anterior e o novo caminho.
-            // todos os RSUs que somente estão no caminho anterior e não estão no novo caminho devem ter
-            // suas regras veículo/serviço removidas para o veículo em questão.
-            sdnController.removeRsuSwitchServiceRule(outOfPathRsuList,vhId,"service_01");
-        }
-        //LOGGING
-        getLog().infoSimTime(this,"Next_RSU-AP: "+connectedVehicle.getNextRsuId());
-        LogUtils.vehicleGDMLog(this,getLog(),this.globalDynamicMap.getVfnVehiclesMap(),"Dynamic_Vehicle_List");
-
-    }
-
-
-
-    /**
-     * Este método objetiva realizar a tomada de decisão sobre a escolha do RSU para a execução de Serviços para cada veículo.
-     * @param v2xMessage mensagem VFNServiceMsg para ser tratada pelo método.
-     */
-    public void serviceMsgHandle(GenericV2xMessage v2xMessage){
-
-        String rsuAp = v2xMessage.getRouting().getSource().getSourceName();
-        getLog().info("Received_VFNServiceMsg_sent_by:{}",rsuAp);
-        String vhId = v2xMessage.mappedV2xMsg.get("vhId");
-        String serviceId = v2xMessage.mappedV2xMsg.get("serviceId"); //Serviço que o veículo deseja consumir.
-
-        this.globalDynamicMap.addVehicleInfo(v2xMessage.mappedV2xMsg);//Atualização ou inserção de Dados do veículo
-
-        VfnConnectedVehicle connectedVehicle = this.globalDynamicMap.getVfnVehiclesMap().get(vhId);  //Veículo cujos dados foram atualizados
-        connectedVehicle.setDistanceVhToRsu(this.rsuPositionsMap.get(connectedVehicle.getRsuApId()));//Atualiza a distância para o RSU_AP
-
-
-
-        //Neste caso é uma solicitação de RsuRunner
-        this.electRsuServiceRunnerToVehicle(connectedVehicle,serviceId); // VFNService-Messages só chegam ao Servidor quando NÃO há RSU definido.
-        String rsuRunnerOfService = connectedVehicle.getRsuOfservice(v2xMessage.mappedV2xMsg.get("serviceId"));
-        //Identifica a RSU_Service_Runner, após sua escolha
-
-
-        //getLog().info("-------------------------------------------------");
-        //Gera String da mensagem de resposta
-        String coreMsg = "#vhId="+vhId+
-                ";msgType="+this.srvConfig.rsuRunnerMsgType+
-                ";netDestAddress="+this.srvConfig.rsuNet+
-                ";unitDestId="+rsuAp+
-                ";serviceId="+serviceId+
-                ";rsuServiceRunner="+rsuRunnerOfService+
-                "#";
-
-
-        connectedVehicle.setActualRsuRunnerPath(sdnController.getPathToRsu(rsuAp,rsuRunnerOfService));
-
-        ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(rsuAp,rsuRunnerOfService);
-        //disparar o envio de regras baseados em vehicle/service origem e RSU destino.
-        sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,vhId,serviceId,rsuRunnerOfService);
-
-        //disparar o envio de regras para o RSU access point, baseada em RSU origem e destino
-        sdnController.sendRuleToRsuSwitch(pathToRunnerArray);
-
-        //enviar mensagem de resposta ao RSU solicitante
-        this.sendRsuServiceRunnerDecision(v2xMessage.mappedV2xMsg.get("rsuId"),coreMsg);
-
-
-        String nextRsuAP = rsuPredictor.predictNextRsuToVehicle(connectedVehicle); //predição do próximo RSU-AP
-
-        if(!Objects.equals(nextRsuAP,connectedVehicle.getNextRsuId())){
-            //O próximo será diferente
-            connectedVehicle.setNextRsuApId(nextRsuAP);//armazena a predição
-            if(!Objects.equals(connectedVehicle.getNextRsuId(), connectedVehicle.getRsuApId())){
-                //Se nextRsuAP for diferente da RsuAP-Atual gera e nvia as regras de encaminhamento dos pacotes da nextRsuAP para
-                connectedVehicle.setNextRsuRunnerPath(sdnController.getPathToRsu(connectedVehicle.getNextRsuId(),rsuRunnerOfService));
-                //sendRuleToPredictedRsu(connectedVehicle);
-            }
-        }
-
-
-
-        if(!Objects.equals(connectedVehicle.getRsuApId(), connectedVehicle.getLastRsuApId())){
-            //Se já houve a migração de RSUAP, deve-se remover do RSU_AP anterior a regra do tipo veículo/serviço
-            ArrayList<String> outOfPathRsuList = new ArrayList<>(); //Lista de RSUs que estão fora do novo caminho.
-            outOfPathRsuList.add(connectedVehicle.getLastRsuApId());
-            //Neste caso apenas será removida a regra do RSU_AP anterior,
-            // mas para que seja completo, deve-se realizar a diferença entre o caminho anterior e o novo caminho.
-            // todos os RSUs que somente estão no caminho anterior e não estão no novo caminho devem ter
-            // suas regras veículo/serviço removidas para o veículo em questão.
-            sdnController.removeRsuSwitchServiceRule(outOfPathRsuList,vhId,"service_01");
-        }
-
-        //LOGGING
-        getLog().infoSimTime(this,"Next_RSU-AP: "+connectedVehicle.getNextRsuId());
-        LogUtils.vehicleGDMLog(this,getLog(),this.globalDynamicMap.getVfnVehiclesMap(),"Dynamic_Vehicle_List");
-
-    }
-
-
-
-
 
 
     /**

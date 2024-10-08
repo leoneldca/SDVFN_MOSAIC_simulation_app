@@ -28,6 +28,8 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
     private String vhId;
     private String rsuAccessPointId;
     private VehicleConfig vehicleConfig;
+    RsuAnnouncedInfo rsuAnnouncedInfo;
+    private final Float RANGE_FACTOR_TO_PREPARE_HANDOVER = 0.7F;
 
     private CommunicationInterface communicationInterface;
 
@@ -42,7 +44,7 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
         getLog().infoSimTime(this, "Activating Adhoc Communication");
         // Ativação do módulo de comunicação Adhoc
         communicationInterface.createAdHocInterface(this.vehicleConfig.radioRange,AdHocChannel.CCH);
-
+        rsuAnnouncedInfo =null;
     }
 
     public void schedulingInfoSending() {
@@ -66,7 +68,7 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
                 //schedulingInfoSending();
             }
         }else if(resource instanceof RsuAnnouncedInfo){
-            RsuAnnouncedInfo rsuAnnouncedInfo = (RsuAnnouncedInfo) resource;
+            rsuAnnouncedInfo = (RsuAnnouncedInfo) resource;
             this.rsuAccessPointId = rsuAnnouncedInfo.getRsuId();
             //schedulingInfoSending(); //enviar informação para a SDVFN para registrar a mudança
             sendInfoToVFN(); //Envia dados do veículo para o novo RSU-AP
@@ -119,7 +121,8 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
 
         //this.vhLatitude = updatedVehicleData.getPosition().getLatitude();
        //this.vhLongitude = updatedVehicleData.getPosition().getLongitude();
-        // this.vhSpeed = updatedVehicleData.getSpeed();
+       // this.vhSpeed = updatedVehicleData.getSpeed();
+
 
     }
 

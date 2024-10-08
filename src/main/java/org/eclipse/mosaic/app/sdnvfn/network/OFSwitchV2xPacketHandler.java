@@ -135,7 +135,7 @@ public class OFSwitchV2xPacketHandler {
      * @return
      */
     private GenericV2xMessage alterMsgToForward(HashMap<String,String> mappedEntryMachingFields, HashMap<String,String> mappedEntryActions, GenericV2xMessage originalMsg){
-        //se há a action txType nas ações é porque há a necessidade de alteração para a que foi determinada
+        //se há a action txType nas ações é porque há a necessidade de alteração para a que foi determinada a mensagem
         //Alterações no corpo da mensagem
         boolean msgChanged = false;
         MessageRouting messageRouting = originalMsg.getRouting(); //inicia apontando para a mensagem atual
@@ -148,7 +148,7 @@ public class OFSwitchV2xPacketHandler {
             //Porta 3 para mensagens vindas do RSU local para o servidor - canal openFlow (Porta 3 do servidor)
         }
 
-        if(mappedEntryActions.containsKey("netDestAddress")){ //se a action antera destinatário
+        if(mappedEntryActions.containsKey("netDestAddress")){ //se a action altera destinatário
             originalMsg.mappedV2xMsg.replace("netDestAddress",mappedEntryActions.get("netDestAddress"));
             msgChanged = true;
         }

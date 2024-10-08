@@ -2,13 +2,12 @@ package org.eclipse.mosaic.app.sdnvfn.information;
 
 import org.eclipse.mosaic.app.sdnvfn.utils.HeadingCalculator;
 import org.eclipse.mosaic.app.sdnvfn.utils.NodesUtils;
-import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.jetbrains.annotations.NotNull;
 
-public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
+public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>, Cloneable{
     private String rsuId;
-    private Double lastRsu;
+    private Double latRsu;
     private Double longRsu;
     private Double distanceToVehicle;
     private long beaconArrivedTime;
@@ -17,7 +16,7 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
 
     public RsuAnnouncedInfo(String rsuId, Double latRsu, Double longRsu) {
         this.setRsuId(rsuId);
-        this.setLastRsu(latRsu);
+        this.setLatRsu(latRsu);
         this.setLongRsu(longRsu);
         this.setDistanceToVehicle(Double.MAX_VALUE);
         this.headingDiferenceToVehicle = 360D;
@@ -43,9 +42,10 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
     }
     public void setDistanceToVehicle(double latVehicle, double longVehicle){
 
-        this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(
-                new MutableGeoPoint(latVehicle,longVehicle),
-                new MutableGeoPoint(this.lastRsu,this.longRsu));
+       // this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(
+       //         new MutableGeoPoint(latVehicle,longVehicle),
+       //         new MutableGeoPoint(this.lastRsu,this.longRsu));
+        this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(latVehicle,longVehicle,this.latRsu,this.longRsu);
     }
 
     public Double getHeadingDiferenceToVehicle(){
@@ -57,7 +57,7 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
                 vehicleData.getHeading(),
                 vehicleData.getPosition().getLatitude(),
                 vehicleData.getPosition().getLongitude(),
-                this.getLastRsu(),
+                this.getLatRsu(),
                 this.getLongRsu()
         );
     }
@@ -70,8 +70,8 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
         return this.rsuId;
     }
 
-    public Double getLastRsu() {
-        return this.lastRsu;
+    public Double getLatRsu() {
+        return this.latRsu;
     }
 
     public Double getLongRsu() {
@@ -82,8 +82,8 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
         this.rsuId = rsuId;
     }
 
-    public void setLastRsu(Double lastRsu) {
-        this.lastRsu = lastRsu;
+    public void setLatRsu(Double latRsu) {
+        this.latRsu = latRsu;
     }
 
     public void setLongRsu(Double longRsu) {
@@ -102,6 +102,11 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>{
     public int compareTo(@NotNull RsuAnnouncedInfo otherRsu) {
 
         return this.timeToReachRsu.compareTo(otherRsu.getTimeToReachRsu());
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
 }

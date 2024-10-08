@@ -12,22 +12,22 @@ import java.util.Objects;
  * A Classe armazenada dados recebidos de um único veículo, contendo ID, Speed, Latitude, Longitude. T
  */
 public class RsuConnectedVehicle {
-    private String vhId;
-    private String rsuId;
-    private String lastRsuId;
-    private String nextRsuId;
-    private Double speed;
-    private Double latitude;
-    private Double longitude;
-    private Double heading;
-    private Double aceleration;
-    private long infoSentTime;
-    private long lastInfoSentTime;
-    private Double lastDistanceToRsu;
-    private Double distanceToRsu;
-    private final HashMap<String, String> serviceRsuMap;  //Map a service to a RSU
-    private ArrayList<NetworkNode> actualRsuRunnerPath;
-    private ArrayList<NetworkNode> nextRsuRunnerPath;
+    protected String vhId;
+    protected String rsuId;
+    protected String lastRsuId;
+    protected String nextRsuId;
+    protected Double speed;
+    protected Double latitude;
+    protected Double longitude;
+    protected Double heading;
+    protected Double aceleration;
+    protected long infoSentTime;
+    protected long lastInfoSentTime;
+    protected Double lastDistanceToRsu;
+    protected Double distanceToRsu;
+    protected final HashMap<String, String> serviceRsuMap;  //Map a service to a RSU
+    protected ArrayList<NetworkNode> actualRsuRunnerPath;
+    protected ArrayList<NetworkNode> nextRsuRunnerPath;
 
 
     public RsuConnectedVehicle() {
@@ -45,6 +45,7 @@ public class RsuConnectedVehicle {
         this.serviceRsuMap = new HashMap<>(); //sempre que um novo veículo é adicionado, obrigatoriamente ele terá uma lista de serviços
         this.actualRsuRunnerPath = new ArrayList<>();
         this.nextRsuRunnerPath = new ArrayList<>();
+
     }
 
 
@@ -64,7 +65,9 @@ public class RsuConnectedVehicle {
         }else{
             setLastDistanceToRsu(getActualDistanceToRsu()); //depois que fizer o update a distância que era a atual passa ser a distancia anterior
         }
+        this.setLastRsuApId(this.getRsuApId());
         this.setRsuApId(mappedMsg.get("rsuId"));
+        //this.setNextRsuApId(this.getRsuApId());
     }
 
     public String getRsuApId() {
@@ -88,6 +91,23 @@ public class RsuConnectedVehicle {
 
 
     }
+
+    public String getLastRsuApId(){
+        return lastRsuId;
+    }
+    public void setLastRsuApId(String lastRsuId){
+
+        this.lastRsuId = lastRsuId;
+    }
+
+    public String getNextRsuId() {
+        return nextRsuId;
+    }
+
+    public void setNextRsuApId(String nextRsuId) {
+        this.nextRsuId = nextRsuId;
+    }
+
 
     public String getVechicleId() {
         return vhId;

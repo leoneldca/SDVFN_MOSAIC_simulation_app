@@ -69,7 +69,7 @@ public class OFSwitchPorts {
 
 
            default:
-                //enviar mensagem pela rede celular: Comunicações para outras RSUs e para Controladores
+                //enviar mensagem pela rede celular: Comunicações para outras RSUs e para SDN Controladores/Orquestradores
                 communicationInterface.sendCellV2xMessage(v2xMessage);
                 break;
 

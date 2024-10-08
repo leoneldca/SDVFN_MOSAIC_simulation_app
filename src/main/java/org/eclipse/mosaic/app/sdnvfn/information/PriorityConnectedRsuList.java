@@ -38,7 +38,7 @@ public class PriorityConnectedRsuList {
             //Atualiza os dados de cada um dos RSUs
             while (index < priorityRsuList.size()){
                 rsu = priorityRsuList.get(index);
-                rsu.setDistanceToVehicle(vehicleData.getPosition().getLatitude(),vehicleData.getPosition().getLatitude());
+                rsu.setDistanceToVehicle(vehicleData.getPosition().getLatitude(),vehicleData.getPosition().getLongitude());
                 rsu.setHeadingDiferenceToVehicle(vehicleData);
                 relativeSpeed = calculateRelativeSpeed(rsu.getHeadingDiferenceToVehicle());
                 timeToReachRsu = rsu.getDistanceToVehicle() / relativeSpeed;
@@ -63,7 +63,7 @@ public class PriorityConnectedRsuList {
 
         }
         if(!rsuFound){ //Se o RSU anunciado não está na lista, adicionar. Não ver maxheading diference neste caso.
-            announcedRsu.setDistanceToVehicle(vehicleData.getPosition().getLatitude(),vehicleData.getPosition().getLatitude());
+            announcedRsu.setDistanceToVehicle(vehicleData.getPosition().getLatitude(),vehicleData.getPosition().getLongitude());
             announcedRsu.setHeadingDiferenceToVehicle(vehicleData);
             relativeSpeed = calculateRelativeSpeed(announcedRsu.getHeadingDiferenceToVehicle());
             timeToReachRsu = announcedRsu.getDistanceToVehicle() / relativeSpeed;
