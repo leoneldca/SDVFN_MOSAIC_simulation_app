@@ -1,25 +1,27 @@
 package org.eclipse.mosaic.app.sdnvfn.information;
 
 import org.eclipse.mosaic.app.sdnvfn.network.NetworkNode;
-import org.eclipse.mosaic.app.sdnvfn.utils.NodesUtils;
-import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.List;
+
 
 /**
- * A Classe armazenada dados recebidos de um único veículo, contendo ID, Speed, Latitude, Longitude. T
+ * A Classe armazenada dados recebidos de um único veículo, contendo ID, Speed, Latitude, Longitude.
  */
 public class VfnConnectedVehicle extends RsuConnectedVehicle{
-
     private ArrayList<NetworkNode> lastRsuRunnerPath;
+    private List<PriorityConnectedRsuList> listOfRsuLists;
+
+    private RsuAnnouncedInfo actualRsuAp;
 
 
 
     public VfnConnectedVehicle() {
         super();
         this.lastRsuRunnerPath = new ArrayList<>();
+        this.listOfRsuLists = new ArrayList<>();
+        this.actualRsuAp = null;
     }
 
 
@@ -82,4 +84,18 @@ public class VfnConnectedVehicle extends RsuConnectedVehicle{
         }
         return "-1";
     }
+
+    public List<PriorityConnectedRsuList> getListOfRsuLists(){
+        return this.listOfRsuLists;
+    }
+
+
+    public RsuAnnouncedInfo getActualRsuAp() {
+        return actualRsuAp;
+    }
+
+    public void setActualRsuAp(RsuAnnouncedInfo actualRsuAp) {
+        this.actualRsuAp = actualRsuAp;
+    }
+
 }

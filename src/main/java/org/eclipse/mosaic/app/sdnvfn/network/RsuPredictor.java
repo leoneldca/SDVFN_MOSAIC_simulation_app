@@ -1,9 +1,7 @@
 package org.eclipse.mosaic.app.sdnvfn.network;
 
-import org.eclipse.mosaic.app.sdnvfn.config.ServerConfig;
 import org.eclipse.mosaic.app.sdnvfn.information.VfnConnectedVehicle;
 import org.eclipse.mosaic.app.sdnvfn.utils.NodesUtils;
-import org.eclipse.mosaic.lib.geo.GeoUtils;
 import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 import org.eclipse.mosaic.app.sdnvfn.utils.HeadingCalculator;
 
@@ -43,8 +41,8 @@ public class RsuPredictor {
         double vehicleHeading =this.connectedVehicle.getHeading();
         for (HashMap.Entry<String, MutableGeoPoint>  rsu : this.rsuPositionMap.entrySet()) {
             //relativeBearing = NodesUtils.calculateRelativeBearing(this.connectedVehicle.getLatitude(), this.connectedVehicle.getLongitude(),
-            double distance = NodesUtils.calculateVehicleRsuDistance(this.connectedVehicle.getLatitude(), this.connectedVehicle.getLongitude(),rsu.getValue().getLatitude(), rsu.getValue().getLongitude());
-            if(distance<=200){ //Apenas RSUs com distância menor que 160m são predizidos
+            double distance = NodesUtils.calculateDistanceBetweenNodes(this.connectedVehicle.getLatitude(), this.connectedVehicle.getLongitude(),rsu.getValue().getLatitude(), rsu.getValue().getLongitude());
+            if(distance<=170){ //Apenas RSUs com distância menor que 170m são predizidos
                 //targetHeading = GeoUtils.azimuth( new MutableGeoPoint(this.connectedVehicle.getLatitude(),this.connectedVehicle.getLongitude()), new MutableGeoPoint(rsu.getValue().getLatitude(), rsu.getValue().getLongitude()));
                 headingDiference = HeadingCalculator.calculateHeadingDifference(vehicleHeading, this.connectedVehicle.getLatitude(),this.connectedVehicle.getLongitude(), rsu.getValue().getLatitude(),rsu.getValue().getLongitude());
 

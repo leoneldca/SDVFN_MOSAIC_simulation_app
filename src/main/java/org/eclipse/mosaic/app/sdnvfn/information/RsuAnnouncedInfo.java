@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>, Cloneable{
     private String rsuId;
+    private String nextRsuId;
     private Double latRsu;
     private Double longRsu;
     private Double distanceToVehicle;
@@ -16,11 +17,20 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>, Cloneable
 
     public RsuAnnouncedInfo(String rsuId, Double latRsu, Double longRsu) {
         this.setRsuId(rsuId);
+        this.setNextRsuId(rsuId);
         this.setLatRsu(latRsu);
         this.setLongRsu(longRsu);
         this.setDistanceToVehicle(Double.MAX_VALUE);
-        this.headingDiferenceToVehicle = 360D;
-        this.timeToReachRsu = 5000D;
+        this.headingDiferenceToVehicle = 180D;
+        this.timeToReachRsu = 50000D;
+    }
+
+    public String getNextRsuId() {
+        return nextRsuId;
+    }
+
+    public void setNextRsuId(String nextRsuId) {
+        this.nextRsuId = nextRsuId;
     }
 
     public Double getTimeToReachRsu() {
@@ -45,7 +55,7 @@ public class RsuAnnouncedInfo implements Comparable<RsuAnnouncedInfo>, Cloneable
        // this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(
        //         new MutableGeoPoint(latVehicle,longVehicle),
        //         new MutableGeoPoint(this.lastRsu,this.longRsu));
-        this.distanceToVehicle = NodesUtils.calculateVehicleRsuDistance(latVehicle,longVehicle,this.latRsu,this.longRsu);
+        this.distanceToVehicle = NodesUtils.calculateDistanceBetweenNodes(latVehicle,longVehicle,this.latRsu,this.longRsu);
     }
 
     public Double getHeadingDiferenceToVehicle(){

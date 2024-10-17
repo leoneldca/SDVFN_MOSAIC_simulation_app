@@ -102,6 +102,7 @@ public class CarInfoToVfnSendingApp extends ConfigurableApplication<VehicleConfi
                 ";heading="+getOs().getVehicleData().getHeading().toString()+
                 ";aceleration="+getOs().getVehicleData().getLongitudinalAcceleration().toString()+
                 ";rsuId="+this.rsuAccessPointId+
+                ";nextRsuId="+this.rsuAnnouncedInfo.getNextRsuId()+
                 "#";
 
         return vehicleStrData;

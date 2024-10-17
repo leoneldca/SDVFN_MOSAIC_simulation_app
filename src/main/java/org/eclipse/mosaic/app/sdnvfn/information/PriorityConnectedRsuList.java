@@ -13,14 +13,26 @@ public class PriorityConnectedRsuList {
 
     private final LinkedList<RsuAnnouncedInfo> priorityRsuList = new LinkedList<>();
     VehicleConfig vehicleConfig;
-    Float maxHeadingDifference;
+    Float maxHeadingDifference; //cada lista criada possui uma maxheadingDifference
 
-    public PriorityConnectedRsuList(VehicleConfig vehicleConfig, Float maxHeadingDifference){
+    public Float getMaxHeadingDifference() {
+        return maxHeadingDifference;
+    }
+
+    public PriorityConnectedRsuList(VehicleConfig vehicleConfig, Float maxHeadingDifference){ //forma usada no veículo
         this.vehicleConfig = vehicleConfig;
+        this.maxHeadingDifference = maxHeadingDifference;
+    }
+    public PriorityConnectedRsuList(Float maxHeadingDifference){ //forma usada no servidor
         this.maxHeadingDifference = maxHeadingDifference;
     }
 
     //Fazer método de update da lista com o cálculo da distância dos veículos.
+
+
+    public LinkedList<RsuAnnouncedInfo> getRsuList(){
+        return priorityRsuList;
+    }
 
     /**
      *
@@ -48,10 +60,10 @@ public class PriorityConnectedRsuList {
                     rsu.setBeaconArrivedTime(announcedRsu.getBeaconArrivedTime());
                     rsuFound = true;
                 }
-                //se o RSU não envia beacons a mais de 3 segundos ou se o HeadingDifference está acima do máximo, remover o RSU da lista.
-                if((rsu.getBeaconArrivedTime()+3*TIME.SECOND)<announcedRsu.getBeaconArrivedTime()
+                //se o RSU não envia beacons a mais de 5 segundos ou se o HeadingDifference está acima do máximo, remover o RSU da lista.
+                if((rsu.getBeaconArrivedTime()+5*TIME.SECOND)<announcedRsu.getBeaconArrivedTime()
                         || rsu.getHeadingDiferenceToVehicle()>this.maxHeadingDifference
-                        || rsu.getDistanceToVehicle()>maxDistance)
+                        || rsu.getDistanceToVehicle()>vehicleConfig.radioRange)
                     {
                     priorityRsuList.remove(index);
                 }else{
@@ -75,17 +87,78 @@ public class PriorityConnectedRsuList {
     }
 
     //método que atualiza as distâncias dos RSUs para os veículos.
-    public void updateRsuDistances(Double vehicleLatitude, Double vehicleLongitude){
-        if(!priorityRsuList.isEmpty()) {
-            for (RsuAnnouncedInfo rsu : priorityRsuList) {
-                rsu.setDistanceToVehicle(vehicleLatitude,vehicleLongitude);
+    public void updateRsusData(VehicleData vehicleData, long simulationTime, PriorityConnectedRsuList rsusAMover ){
+        double relativeSpeed;
+        double timeToReachRsu;
+        if(!this.priorityRsuList.isEmpty()){
+            //Atualiza a distância do RSU com relação ao veículo
+            RsuAnnouncedInfo rsu;
+            int index = 0;
+            //Atualiza os dados de cada um dos RSUs
+            while (index < priorityRsuList.size()){
+                rsu = priorityRsuList.get(index);
+                rsu.setDistanceToVehicle(vehicleData.getPosition().getLatitude(),vehicleData.getPosition().getLongitude());
+                rsu.setHeadingDiferenceToVehicle(vehicleData);
+                relativeSpeed = calculateRelativeSpeed(rsu.getHeadingDiferenceToVehicle());
+                timeToReachRsu = rsu.getDistanceToVehicle() / relativeSpeed;
+                rsu.setTimeToReachRsu(timeToReachRsu); //set relative time to vehicle to reach this RSU
+
+
+                //se o RSU não envia beacons a mais de 5 segundos ou se está fora do range, remover apenas. Se o HeadingDifference está acima do máximo e abaixo de 180, mover para a lista e movimentação.
+                if((rsu.getBeaconArrivedTime()+5*TIME.SECOND)<simulationTime
+                        || rsu.getHeadingDiferenceToVehicle()>this.maxHeadingDifference
+                        || rsu.getDistanceToVehicle()>vehicleConfig.radioRange)//rsus velhos podem ter mais de 200m de distância
+                {
+                    if(rsu.getHeadingDiferenceToVehicle()>this.maxHeadingDifference && rsu.getHeadingDiferenceToVehicle()<180D){
+                        //copiar para a lista de movimentação antes de excluir.
+                        rsusAMover.insertRsuData(priorityRsuList.get(index),vehicleData);
+                    }
+                    priorityRsuList.remove(index);
+                }else{
+                    index++;
+                }
+
             }
-            Collections.sort(this.priorityRsuList);
+
+
         }
+        //Após o final a lista não estará ordenada. Deve-se chamar o método de ordenação
+        sortRsuList();
     }
 
-    public LinkedList<RsuAnnouncedInfo> getRsuList(){
-        return priorityRsuList;
+    private void sortRsuList(){
+        if(priorityRsuList.size()>1){
+                Collections.sort(priorityRsuList); //Ordena a Lista de Prioridades. Ver método compareTo da classe RsuAnnoucedInfo
+                if(priorityRsuList.size()>vehicleConfig.maxRsuListSize) priorityRsuList.removeLast();
+        }
+
+    }
+
+    public void insertRsuData(RsuAnnouncedInfo announcedRsu, VehicleData vehicleData){
+        //Inserção Ordenada na lista de prioridade
+        double relativeSpeed;
+        double timeToReachRsu;
+        announcedRsu.setDistanceToVehicle(vehicleData.getPosition().getLatitude(),vehicleData.getPosition().getLongitude());
+        announcedRsu.setHeadingDiferenceToVehicle(vehicleData);
+        relativeSpeed = calculateRelativeSpeed(announcedRsu.getHeadingDiferenceToVehicle());
+        timeToReachRsu = announcedRsu.getDistanceToVehicle() / relativeSpeed;
+        announcedRsu.setTimeToReachRsu(timeToReachRsu);
+
+        if(this.priorityRsuList.isEmpty()){
+            priorityRsuList.addFirst(announcedRsu);  //se estiver vazia adiciona no início
+        }else{//Há elementos na lista
+            int index = 0;
+            while (index < priorityRsuList.size()){
+                if(announcedRsu.getDistanceToVehicle()<=priorityRsuList.get(index).getDistanceToVehicle()){
+                    //Se o o elemento a ser adicionado tem menor distância, adicionar no lugar do elemento
+                    priorityRsuList.add(index,announcedRsu);
+                    return;
+                }
+                index++;
+            }
+            this.priorityRsuList.addLast(announcedRsu); //se não está mais perto que nenhum, então adiciona no final
+        }
+
     }
 
     private double calculateRelativeSpeed(double headingDiference) {

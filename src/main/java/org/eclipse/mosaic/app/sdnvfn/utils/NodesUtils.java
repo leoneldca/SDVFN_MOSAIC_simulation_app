@@ -6,7 +6,7 @@ import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 public class NodesUtils {
 
 
-    public static double calculateVehicleRsuDistance(double latVehicle, double longVehicle, double latRsu, double longRsu) {
+    public static double calculateDistanceBetweenNodes(double latVehicle, double longVehicle, double latRsu, double longRsu) {
         double R = 6371000; // Earth radius in meters
         double latDistance = Math.toRadians(latRsu - latVehicle); //N
         double longDistance = Math.toRadians(longRsu - longVehicle); //E
@@ -19,7 +19,7 @@ public class NodesUtils {
 
         return R * c;
     }
-    public static double calculateVehicleRsuDistance(MutableGeoPoint vehicleGeoLocation, MutableGeoPoint rsuGeoLocation) {
+    public static double calculateDistanceBetweenNodes(MutableGeoPoint vehicleGeoLocation, MutableGeoPoint rsuGeoLocation) {
 
         return GeoUtils.distanceBetween(vehicleGeoLocation,rsuGeoLocation);
     }

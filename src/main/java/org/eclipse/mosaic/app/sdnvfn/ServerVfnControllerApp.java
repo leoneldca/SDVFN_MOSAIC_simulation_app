@@ -2,13 +2,11 @@ package org.eclipse.mosaic.app.sdnvfn;
 
 import org.eclipse.mosaic.app.sdnvfn.config.ServerConfig;
 import org.eclipse.mosaic.app.sdnvfn.information.GlobalDynamicVehicleMap;
+import org.eclipse.mosaic.app.sdnvfn.information.PriorityConnectedRsuList;
 import org.eclipse.mosaic.app.sdnvfn.information.VfnConnectedVehicle;
 import org.eclipse.mosaic.app.sdnvfn.message.ControllerServerMsg;
 import org.eclipse.mosaic.app.sdnvfn.message.GenericV2xMessage;
-import org.eclipse.mosaic.app.sdnvfn.network.CommunicationInterface;
-import org.eclipse.mosaic.app.sdnvfn.network.NetworkNode;
-import org.eclipse.mosaic.app.sdnvfn.network.RsuPredictor;
-import org.eclipse.mosaic.app.sdnvfn.network.SdnController;
+import org.eclipse.mosaic.app.sdnvfn.network.*;
 import org.eclipse.mosaic.app.sdnvfn.utils.LogUtils;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.CamBuilder;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedAcknowledgement;
@@ -33,6 +31,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
     private HashMap<String,MutableGeoPoint> rsuPositionsMap;
     private Map<String, NetworkNode> rsuNodesMap;
     private RsuPredictor rsuPredictor;
+    private NextRsuSelector nextRsuSelector;
     private int currentIndexFogComp;
 
     public ServerVfnControllerApp() {
@@ -67,6 +66,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             //getLog().info(rsuNodesMap.get(entry.getKey()).printNode());
         }
         rsuPredictor = new RsuPredictor(this.rsuPositionsMap); //instanciação do módulo RsuPredictor
+        nextRsuSelector = new NextRsuSelector(this.rsuPositionsMap,srvConfig);
 
     }
 
@@ -146,7 +146,6 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
     }
 
     public void vehicleMsgHandle(GenericV2xMessage v2xMessage){
-
         String rsuApIdInMsg = v2xMessage.getRsuAPId(); //anota o RSU informado na mensagem
         String actualRsuApId;
         //getLog().infoSimTime(this,"Received_{}; sent_by_{};",v2xMessage.getMsgType(),rsuApIdInMsg);
@@ -163,6 +162,12 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             connectedVehicle= this.globalDynamicMap.getVfnVehiclesMap().get(vhId);  //Acesso aos dados do veículo que agora está incluído
             actualRsuApId = rsuApIdInMsg;
 
+            //quando o veículo é adicionado pela primeira vez, cria-se as suas listas de RSU. Dividem os RSUs de acordo com o HeadingDifference com relação ao veículo.
+            connectedVehicle.getListOfRsuLists().add(0,new PriorityConnectedRsuList(srvConfig.maxHeadingDifferenceList1));
+            connectedVehicle.getListOfRsuLists().add(1,new PriorityConnectedRsuList(srvConfig.maxHeadingDifferenceList2));
+            connectedVehicle.getListOfRsuLists().add(2,new PriorityConnectedRsuList(180F));
+
+
             electRsuServiceRunnerToVehicle(connectedVehicle,serviceId); //Elege o RSU_Service_Runner para o Veículo baseado no seu serviço consumido
             rsuRunnerOfService = connectedVehicle.getRsuOfservice(serviceId); //recupera o
             connectedVehicle.setActualRsuRunnerPath(sdnController.getPathToRsu(rsuApIdInMsg,rsuRunnerOfService)); //SDN Controller calcula o path entre o RSU-AP e o RSU-SERVICE-RUNNER
@@ -173,6 +178,10 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(rsuApIdInMsg,rsuRunnerOfService);
             sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,vhId,serviceId,rsuRunnerOfService);// envio de regras baseados em vehicle/service origem e RSU destino.
             sdnController.sendRuleToRsuSwitch(pathToRunnerArray); //envio de regras para o RSU access point, baseada em RSU origem e destino
+            /*getLog().infoSimTime(this,"SDN rules after vehicle connection. \n" +
+                    "Vehicle: {} \n" +
+                    "Predicted-AP: {} \n" +
+                    "Actual-AP: {}",connectedVehicle.getVechicleId(),connectedVehicle.getNextRsuId(),rsuApIdInMsg);*/
         }else{
             //veículo já consta na base de dados
             connectedVehicle= this.globalDynamicMap.getVfnVehiclesMap().get(vhId);  //Acesso aos dados do veículo já incluído durante a primeira conexão
@@ -184,7 +193,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
         if(!Objects.equals(rsuApIdInMsg, actualRsuApId)){
             //RSU-AP informado diferente do atual, houve handover
             connectedVehicle.setLastRsuApId(actualRsuApId); //O RSU-AP que está na base passa ser o lastRSU-AP
-            connectedVehicle.setLastRsuRunnerPath(connectedVehicle.getActualRsuRunnerPath()); //o path atual para a ser o Last path
+            connectedVehicle.setLastRsuRunnerPath(connectedVehicle.getActualRsuRunnerPath()); //o path atual é armazenado como Last path
 
 
             if(!Objects.equals(rsuApIdInMsg,connectedVehicle.getNextRsuId())){
@@ -193,7 +202,10 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
                 ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(rsuApIdInMsg,rsuRunnerOfService);
                 sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,vhId,serviceId,rsuRunnerOfService);//envio de regras baseados em vehicle/service origem e RSU destino.
                 sdnController.sendRuleToRsuSwitch(pathToRunnerArray);// Envio de regras para o RSU access point, após veículo já estar no próximo RSU-AP.
-                getLog().infoSimTime(this,"SDN rules after handover");
+                getLog().infoSimTime(this,"SDN rules after vehicle connection. \n" +
+                        "Vehicle: {} \n" +
+                        "Predicted-AP: {} \n" +
+                        "Actual-AP: {}",connectedVehicle.getVechicleId(),connectedVehicle.getNextRsuId(),rsuApIdInMsg);
 
             }else{
                 //predição foi bem sucedida. O predicted path é eleito como o path atual
@@ -212,22 +224,41 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
         }//Se não entrou no If(condicional) então não houve handover
 
         connectedVehicle.setDistanceVhToRsu(this.rsuPositionsMap.get(rsuApIdInMsg));//Atualiza a distância para o RSU_AP
-        String nextRsuAP = rsuPredictor.predictNextRsuToVehicle(connectedVehicle); //tendo havido ou não o handover, o predicted Next RSU é recalculado
+        String nextPredictedRsuAP;
+        String actualPredictedRsuAP;
+        actualPredictedRsuAP = connectedVehicle.getNextRsuId();
+        //nextPredictedRsuAP = rsuPredictor.predictNextRsuToVehicle(connectedVehicle); //tendo havido ou não o handover, o predicted Next RSU é recalculado
+        //nextPredictedRsuAP = nextRsuSelector.selectNextRsuToVehicle(connectedVehicle);
+        if(v2xMessage.getMappedMsg().containsKey("nextRsuId")){
+            nextPredictedRsuAP = v2xMessage.mappedV2xMsg.get("nextRsuId"); //se há mensagem informando o NextRSU, então usá-lo. Se não há, então
+        }else{
+            nextPredictedRsuAP = actualPredictedRsuAP;
+        }
 
 
-        if(!Objects.equals(nextRsuAP,connectedVehicle.getNextRsuId())){ //Se o Predicted RSU mudou, deve-se fazer um novo caminho para a nova predição
+
+
+        if(!Objects.equals(nextPredictedRsuAP,actualPredictedRsuAP)){ //Se o Predicted RSU mudou, deve-se fazer um novo caminho para a nova predição
             //houve uma mudança de predição de próxima RSU
-            connectedVehicle.setNextRsuApId(nextRsuAP); //atualiza o next RSU-AP nos dados do veículo
+
+            //Obs. Se Estava conectado no atual, não remover as regras do caminho atual
+
             //Agora deve-se atualizar o path para o novo predictedRSU e remover as regras que estão no differencePath.
-            ArrayList<NetworkNode> newPredicteRsuApPath = sdnController.getPathToRsu(nextRsuAP,rsuRunnerOfService);
-            ArrayList<NetworkNode> differenceNodeList = sdnController.getPathDifference(newPredicteRsuApPath,connectedVehicle.getNextRsuRunnerPath());
-            ArrayList<String> strDifferenceNodeList = new ArrayList<>();
-            for (NetworkNode netNode: differenceNodeList) {
-                strDifferenceNodeList.add(netNode.getRsuId());
+            ArrayList<NetworkNode> newPredicteRsuApPath = sdnController.getPathToRsu(nextPredictedRsuAP,rsuRunnerOfService);
+
+            if(!Objects.equals(actualPredictedRsuAP, connectedVehicle.getRsuApId())){ //compara antes da atualização
+                //Somente remover regras do último predicted path se era diferente do atual path
+                ArrayList<NetworkNode> differenceNodeList = sdnController.getPathDifference(newPredicteRsuApPath,connectedVehicle.getNextRsuRunnerPath());
+                ArrayList<String> strDifferenceNodeList = new ArrayList<>();
+                for (NetworkNode netNode: differenceNodeList) {
+                    strDifferenceNodeList.add(netNode.getRsuId());
+                }
+                sdnController.removeRsuSwitchServiceRule(strDifferenceNodeList,vhId,serviceId); //Remove a regras dos switches que não estão mais no PredictedPath
             }
-            sdnController.removeRsuSwitchServiceRule(strDifferenceNodeList,vhId,serviceId); //Remove a regras dos switches que não estão mais no PredictedPath
+
+            connectedVehicle.setNextRsuApId(nextPredictedRsuAP); //atualiza o next RSU-AP nos dados do veículo
             connectedVehicle.setNextRsuRunnerPath(newPredicteRsuApPath);
-            ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(nextRsuAP,rsuRunnerOfService);
+            ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(nextPredictedRsuAP,rsuRunnerOfService);
             sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,vhId,serviceId,rsuRunnerOfService);
             sdnController.sendRuleToRsuSwitch(pathToRunnerArray);//disparar o envio de regras para o predicted RSU  access point, baseada em RSU origem e destino
         }

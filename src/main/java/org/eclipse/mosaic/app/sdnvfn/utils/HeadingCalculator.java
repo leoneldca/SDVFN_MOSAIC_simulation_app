@@ -35,10 +35,12 @@ public class HeadingCalculator {
         double targetHeading = calculateTargetHeading(lat1, lon1, lat2, lon2);
 
         // Calcula a diferença entre o heading real e o heading desejado
-        double headingDifference = realHeading - targetHeading;
-
+        double headingDifference = Math.abs(realHeading - targetHeading); //calcula o angulo tendo o realheading como referência, ao invés co norte.
+        if(headingDifference > 180){
+            headingDifference = 360 - headingDifference;
+        }
         // Ajusta a diferença para o intervalo [-180, 180]
-        headingDifference = Math.abs((headingDifference + 180) % 360 - 180);
+        //headingDifference = Math.abs((headingDifference + 180) % 360 - 180);
 
         return headingDifference;
     }

@@ -38,6 +38,7 @@ org/eclipse/mosaic/app/sdnvfn/RsuBeaconApp.class
 org/eclipse/mosaic/app/sdnvfn/message/MicroServiceMsg.class
 org/eclipse/mosaic/app/sdnvfn/information/VfnServiceReplicationHandler.class
 org/eclipse/mosaic/app/sdnvfn/utils/NodesUtils.class
+org/eclipse/mosaic/app/sdnvfn/network/NextRsuSelector.class
 org/eclipse/mosaic/app/sdnvfn/message/GreenWaveMsg.class
 org/eclipse/mosaic/app/sdnvfn/information/GlobalDynamicVehicleMap.class
 org/eclipse/mosaic/app/sdnvfn/utils/LogUtils.class

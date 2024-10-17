@@ -179,7 +179,7 @@ public class RsuConnectedVehicle {
 
     public void setDistanceVhToRsu(MutableGeoPoint rsuGeoPoint){
         this.lastDistanceToRsu=this.getActualDistanceToRsu();
-        this.distanceToRsu = NodesUtils.calculateVehicleRsuDistance(new MutableGeoPoint(getLatitude(),getLongitude()),rsuGeoPoint);
+        this.distanceToRsu = NodesUtils.calculateDistanceBetweenNodes(getLatitude(),getLongitude(),rsuGeoPoint.getLatitude(),rsuGeoPoint.getLongitude());
     }
 
     public Double getLastDistanceToRsu() {

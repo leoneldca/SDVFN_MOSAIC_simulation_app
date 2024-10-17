@@ -22,6 +22,8 @@ import java.util.ArrayList;
  */
 public class VehicleConfig {
     public Float radioRange;
+    public Float handoverZoneMultiplier;
+    public Float handoverPredictionZoneMultiplier;
     public Integer defautMsgHops;
     public ArrayList<String> vehicleServiceList = new ArrayList<>();
     public String rsuAccessPointId;

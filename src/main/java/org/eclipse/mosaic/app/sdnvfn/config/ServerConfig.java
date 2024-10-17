@@ -21,7 +21,9 @@ import java.util.ArrayList;
  * This is an example of a simple configuration class.
  */
 public class ServerConfig {
-
+    public Float adHocRadioRange;
+    public Float handoverZoneMultiplier;
+    public Float handoverPredictionZoneMultiplier;
     public ArrayList<String> commonServiceList = new ArrayList<>();
     public ArrayList<String> specificServiceList = new ArrayList<>();
     public String rsuInitialRunner;
@@ -33,6 +35,12 @@ public class ServerConfig {
     public String openFlowPacketInMsg;
     public String openFlowPacketOutMsg;
     public String openFlowFlowMod;
+
+    public Float headingDiferenceWeigth;
+    public Float maxHeadingDifferenceList1;
+    public Float maxHeadingDifferenceList2;
+    public int maxRsuListSize;
+    public Float fixedVirtualSpeed;
 
     public String serverAddress;
     public String serverName;
