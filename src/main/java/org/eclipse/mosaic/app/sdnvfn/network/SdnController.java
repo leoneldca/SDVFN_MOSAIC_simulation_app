@@ -9,6 +9,7 @@ import org.eclipse.mosaic.fed.application.app.api.os.OperatingSystem;
 import org.eclipse.mosaic.lib.enums.ProtocolType;
 import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
+import org.eclipse.mosaic.rti.TIME;
 import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
@@ -79,6 +80,7 @@ public class SdnController {
      * @param rsuServiceRunner
      */
     public void sendVehicleServiceRuleToRsuSwitch(ArrayList<String> rsuPathArray,String vhId, String serviceId, String rsuServiceRunner){
+
         String rsuCommPort="4";
         HashMap<String,String> mappedOFFlowModMsg = new HashMap<>();
         mappedOFFlowModMsg.put("msgType",this.srvConfig.openFlowMsgType);

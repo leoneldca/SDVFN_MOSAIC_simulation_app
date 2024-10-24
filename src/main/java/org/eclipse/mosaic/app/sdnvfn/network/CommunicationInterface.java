@@ -2,8 +2,10 @@ package org.eclipse.mosaic.app.sdnvfn.network;
 
 import org.eclipse.mosaic.app.sdnvfn.message.GenericV2xMessage;
 import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.AdHocModuleConfiguration;
+import org.eclipse.mosaic.fed.application.ambassador.simulation.communication.ReceivedV2xMessage;
 import org.eclipse.mosaic.fed.application.app.api.OperatingSystemAccess;
 import org.eclipse.mosaic.fed.application.app.api.os.OperatingSystem;
+import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
 import org.eclipse.mosaic.lib.enums.AdHocChannel;
 
 public class CommunicationInterface {

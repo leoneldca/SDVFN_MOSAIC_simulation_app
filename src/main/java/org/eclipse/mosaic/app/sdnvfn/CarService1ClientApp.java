@@ -92,7 +92,14 @@ public class CarService1ClientApp extends ConfigurableApplication<VehicleConfig,
         vfnServiceMsg.mappedV2xMsg.put("sequenceCounter",this.msgSequenceCounter.toString());
         getOs().getAdHocModule().sendV2xMessage(vfnServiceMsg); //envio de mensagem
         //getLog().infoSimTime(this, "RSU-AP= {}, ", this.vhConfig.rsuAccessPointId);
-        getLog().infoSimTime(this ,"sent_vfnServiceMsg: {}",vfnServiceMsg.getCoreMsg());
+        getLog().infoSimTime(this ,"{};msgId={};vhId={};rsuId={};serviceMsg={};sendTime={}",
+                vfnServiceMsg.getMappedMsg().get("msgType"),
+                vfnServiceMsg.getMappedMsg().get("msgId"),
+                vfnServiceMsg.getMappedMsg().get("vhId"),
+                vfnServiceMsg.getMappedMsg().get("rsuId"),
+                vfnServiceMsg.getMappedMsg().get("serviceMsg"),
+                vfnServiceMsg.getMappedMsg().get("sendTime")
+                );
         this.sentCoreMsg = serviceStrData;
         this.msgSentTime = getOs().getSimulationTime();
 
@@ -230,7 +237,15 @@ public class CarService1ClientApp extends ConfigurableApplication<VehicleConfig,
                     //this.mappedVfnServiceResultMsg.clear(); //limpa a ultima resposta mapeada
                     //this.mappedVfnServiceResultMsg = MsgUtils.extractMsgToHash(vfnServiceResultMsg.toString()); //mapea a mensagem recebida
                     //getLog().infoSimTime(this,"Resultado recebido de {}: ",vfnServiceResultMsg.getRouting().getSource().getSourceName());
-                    getLog().infoSimTime(this,"vfnServiceResultMsg: {} ",vfnServiceResultMsg.getCoreMsg());
+                    getLog().infoSimTime(this,"{};msgId={};vhId={};rsuRunnerId={};serviceProcessResult={};receptionTime={}",
+                            vfnServiceResultMsg.getMappedMsg().get("msgType"),
+                            vfnServiceResultMsg.getMappedMsg().get("msgId"),
+                            vfnServiceResultMsg.getMappedMsg().get("vhId"),
+                            vfnServiceResultMsg.getMappedMsg().get("rsuId"),
+                            vfnServiceResultMsg.getMappedMsg().get("serviceProcessResult"),
+                            getOs().getSimulationTime()
+
+                    );
                     //getLog().info("Msg Id: {}",vfnServiceResultMsg.mappedV2xMsg.get("msgId"));
                     //getLog().info("Result: {}",vfnServiceResultMsg.mappedV2xMsg.get("serviceProcessResult"));
 

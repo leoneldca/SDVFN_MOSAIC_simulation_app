@@ -38,7 +38,7 @@ public class NextRsuSelector {
             return connectedVehicle.getRsuApId();
         }
         if(!(connectedVehicle.getActualDistanceToRsu()>=connectedVehicle.getLastDistanceToRsu()
-                && (connectedVehicle.getActualDistanceToRsu()>= (serverConfig.adHocRadioRange *serverConfig.handoverPredictionZoneMultiplier)))) { //75% do range
+                && (connectedVehicle.getActualDistanceToRsu()>= (serverConfig.adHocRadioRange *serverConfig.handoverZoneMultiplier)))) { //75% do range
             return connectedVehicle.getRsuApId(); ////Se ainda está se aproximando do RSU-AP atual, mantem. Se distancia é menor que 70% da máxima, mantém. Se os dois caso acontecem, mantem
         }//se está se distanciando e a distância é maior de 70% da máxima, então realizar a predição de outra RSU.
         double minTimeToReachRsu = Double.MAX_VALUE;
@@ -157,7 +157,7 @@ public class NextRsuSelector {
         if((listOfRsuLists.get(0).getRsuList().size()!=0
                 ||listOfRsuLists.get(1).getRsuList().size()!=0
                 ||listOfRsuLists.get(2).getRsuList().size()!=0)
-                && (connectedVehicle.getActualDistanceToRsu()>serverConfig.adHocRadioRange*serverConfig.handoverPredictionZoneMultiplier)
+                && (connectedVehicle.getActualDistanceToRsu()>serverConfig.adHocRadioRange*serverConfig.handoverZoneMultiplier)
                 && (vehicleRsuHeadingDifference>serverConfig.maxHeadingDifferenceList2)){ //alguma lista deve não estar vazia, já está na zona de predição e já está a mais de 90 graus de headingDifference do RSU.
 
             if(listOfRsuLists.get(0).getRsuList().size()!=0){//se Lista 1 não está vazia, escolher da lista 1

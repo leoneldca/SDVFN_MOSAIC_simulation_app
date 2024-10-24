@@ -1,5 +1,6 @@
 package org.eclipse.mosaic.app.sdnvfn.network;
 
+import org.eclipse.mosaic.app.sdnvfn.config.ServerConfig;
 import org.eclipse.mosaic.app.sdnvfn.information.VfnConnectedVehicle;
 import org.eclipse.mosaic.app.sdnvfn.utils.NodesUtils;
 import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
@@ -13,10 +14,12 @@ public class RsuPredictor {
     private VfnConnectedVehicle connectedVehicle;
     private static final int MAX_HEADING_DIFFERENCE = 180;
     private static final float HEADING_DIFFERENCE_WEIGHT = 1F;
+    private ServerConfig serverconfig;
 
 
-    public RsuPredictor(HashMap<String, MutableGeoPoint> rsuPositionMap) {
+    public RsuPredictor(HashMap<String, MutableGeoPoint> rsuPositionMap, ServerConfig serverConfig) {
         this.rsuPositionMap = rsuPositionMap;
+        this.serverconfig = serverConfig;
     }
 
     /**
@@ -30,35 +33,36 @@ public class RsuPredictor {
         if(this.rsuPositionMap.size()<2 ){ //Seria o caso de um mapa com apenas 1 RSU, manter sempre o mesmo.
             return connectedVehicle.getRsuApId();
         }
-        if(!(connectedVehicle.getActualDistanceToRsu()>=connectedVehicle.getLastDistanceToRsu() && (connectedVehicle.getActualDistanceToRsu()>= (200*0.7)))) {
+        double vehicleHeading =this.connectedVehicle.getHeading();
+        double headingDiference;
+        headingDiference = HeadingCalculator.calculateHeadingDifference(vehicleHeading, this.connectedVehicle.getLatitude(),this.connectedVehicle.getLongitude(),
+                this.rsuPositionMap.get(this.connectedVehicle.getRsuApId()).getLatitude(),this.rsuPositionMap.get(this.connectedVehicle.getRsuApId()).getLongitude());
+
+        if(headingDiference<=serverconfig.maxHeadingDifferenceList2 && (connectedVehicle.getActualDistanceToRsu()>=serverconfig.adHocRadioRange*serverconfig.handoverPredictionZoneMultiplier)) {
             return connectedVehicle.getRsuApId(); ////Se ainda está se aproximando do RSU-AP atual, mantem. Se distancia é menor que 70% da máxima, mantém. Se os dois caso acontecem, mantem
         }//se está se distanciando e a distância é maior de 70% da máxima, então realizar predição
         double minTimeToReachRsu = Double.MAX_VALUE;
-        String predictedRSUId = this.connectedVehicle.getRsuApId(); //Num primeiro momento assumer que o proximo RSU-AP será o atual.
+        String predictedRSUId = this.connectedVehicle.getRsuApId(); //Num primeiro momento assumir que o proximo RSU-AP será o atual.
 
         //double targetHeading;
-        double headingDiference;
-        double vehicleHeading =this.connectedVehicle.getHeading();
+
+
         for (HashMap.Entry<String, MutableGeoPoint>  rsu : this.rsuPositionMap.entrySet()) {
             //relativeBearing = NodesUtils.calculateRelativeBearing(this.connectedVehicle.getLatitude(), this.connectedVehicle.getLongitude(),
             double distance = NodesUtils.calculateDistanceBetweenNodes(this.connectedVehicle.getLatitude(), this.connectedVehicle.getLongitude(),rsu.getValue().getLatitude(), rsu.getValue().getLongitude());
-            if(distance<=170){ //Apenas RSUs com distância menor que 170m são predizidos
+            if(distance<=serverconfig.adHocRadioRange*serverconfig.handoverPredictionZoneMultiplier){ //Apenas RSUs que estão antes das zonas de handover
                 //targetHeading = GeoUtils.azimuth( new MutableGeoPoint(this.connectedVehicle.getLatitude(),this.connectedVehicle.getLongitude()), new MutableGeoPoint(rsu.getValue().getLatitude(), rsu.getValue().getLongitude()));
                 headingDiference = HeadingCalculator.calculateHeadingDifference(vehicleHeading, this.connectedVehicle.getLatitude(),this.connectedVehicle.getLongitude(), rsu.getValue().getLatitude(),rsu.getValue().getLongitude());
 
-                if(headingDiference<=MAX_HEADING_DIFFERENCE){//Descarta RSU que possuem uma heading diference acima do máximo permitido
+                double relativeSpeed = calculateRelativeSpeed(headingDiference);
 
-                    //if(distance>40) System.out.println("Distance: "+connectedVehicle.getVechicleId() +" -> "+rsu.getValue()+" = " + distance);
-                    // Consider the relative movement of the vehicle and RSU
-                    double relativeSpeed = calculateRelativeSpeed(headingDiference);
+                double timeToReachRsu = distance / relativeSpeed;
 
-                    double timeToReachRsu = distance / relativeSpeed;
-
-                    if (timeToReachRsu < minTimeToReachRsu) { //Seleciona a menor distância, ponderada pela relative speed ( a qual diminue com o aumento da heading difference)
-                        minTimeToReachRsu = timeToReachRsu;
-                        predictedRSUId = rsu.getKey();
-                    }
+                if (timeToReachRsu < minTimeToReachRsu) { //Seleciona a menor distância, ponderada pela relative speed ( a qual diminue com o aumento da heading difference)
+                    minTimeToReachRsu = timeToReachRsu;
+                    predictedRSUId = rsu.getKey();
                 }
+
             }
 
         }

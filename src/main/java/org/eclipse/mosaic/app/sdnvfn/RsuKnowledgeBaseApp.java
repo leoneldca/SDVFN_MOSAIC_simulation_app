@@ -113,6 +113,7 @@ public  class RsuKnowledgeBaseApp extends ConfigurableApplication<RsuConfig,Road
         mappedResultMsg.put("serviceProcessResult",this.processResultStr);
         mappedResultMsg.put("vhId",vfnServiceMsg.mappedV2xMsg.get("vhId"));
         mappedResultMsg.put("msgId",vfnServiceMsg.mappedV2xMsg.get("msgId"));
+        mappedResultMsg.put("sendTime",vfnServiceMsg.mappedV2xMsg.get("sendTime"));
         mappedResultMsg.put("rsuId",getOs().getId()); //verificar se realmente é necessário ou deve-se manter o original do rsuAp
 
         final GenericV2xMessage serviceResultV2xMsg;
@@ -219,6 +220,12 @@ public  class RsuKnowledgeBaseApp extends ConfigurableApplication<RsuConfig,Road
         GenericV2xMessage msgToController = new GenericV2xMessage(routing,mappedV2xData);
         applicationsInteractor.sendV2xMsgToApp(msgToController, RsuOFSwitchApp.class);
 
+    }
+
+    public void scheduleRunServiceTask(GenericV2xMessage v2xMessage) {
+
+        Event event = new Event(getOs().getSimulationTime()+TIME.SECOND/3, this,"service01MsgSend"); //cria evento imediato para envio de mensagem
+        getOs().getEventManager().addEvent(event);
     }
 
     private void camMsgHandler(Cam camMsg){
@@ -388,9 +395,6 @@ O método recebe como argumento a mensagem do controlador:
         }else{
             System.out.println("problem on processing service");
         }
-        //if(serviceResult==135){
-            //System.out.println("depurar");
-        //}
         return String.valueOf(serviceResult);
 
     }

@@ -19,6 +19,7 @@ import org.eclipse.mosaic.lib.enums.ProtocolType;
 import org.eclipse.mosaic.lib.geo.MutableGeoPoint;
 import org.eclipse.mosaic.lib.objects.v2x.MessageRouting;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
+import org.eclipse.mosaic.rti.TIME;
 
 import java.util.*;
 
@@ -65,7 +66,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             rsuNodesMap.put(entry.getKey(),rsuNetNode);
             //getLog().info(rsuNodesMap.get(entry.getKey()).printNode());
         }
-        rsuPredictor = new RsuPredictor(this.rsuPositionsMap); //instanciação do módulo RsuPredictor
+        rsuPredictor = new RsuPredictor(this.rsuPositionsMap, this.srvConfig); //instanciação do módulo RsuPredictor
         nextRsuSelector = new NextRsuSelector(this.rsuPositionsMap,srvConfig);
 
     }
@@ -178,10 +179,10 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
             ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(rsuApIdInMsg,rsuRunnerOfService);
             sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,vhId,serviceId,rsuRunnerOfService);// envio de regras baseados em vehicle/service origem e RSU destino.
             sdnController.sendRuleToRsuSwitch(pathToRunnerArray); //envio de regras para o RSU access point, baseada em RSU origem e destino
-            /*getLog().infoSimTime(this,"SDN rules after vehicle connection. \n" +
+            getLog().infoSimTime(this,"SDN rules after FIRST vehicle connection. \n" +
                     "Vehicle: {} \n" +
                     "Predicted-AP: {} \n" +
-                    "Actual-AP: {}",connectedVehicle.getVechicleId(),connectedVehicle.getNextRsuId(),rsuApIdInMsg);*/
+                    "Actual-AP: {}",connectedVehicle.getVechicleId(),connectedVehicle.getNextRsuId(),rsuApIdInMsg);
         }else{
             //veículo já consta na base de dados
             connectedVehicle= this.globalDynamicMap.getVfnVehiclesMap().get(vhId);  //Acesso aos dados do veículo já incluído durante a primeira conexão
@@ -202,7 +203,7 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
                 ArrayList<String> pathToRunnerArray = sdnController.getStrPathToRsu(rsuApIdInMsg,rsuRunnerOfService);
                 sdnController.sendVehicleServiceRuleToRsuSwitch(pathToRunnerArray,vhId,serviceId,rsuRunnerOfService);//envio de regras baseados em vehicle/service origem e RSU destino.
                 sdnController.sendRuleToRsuSwitch(pathToRunnerArray);// Envio de regras para o RSU access point, após veículo já estar no próximo RSU-AP.
-                getLog().infoSimTime(this,"SDN rules after vehicle connection. \n" +
+                getLog().infoSimTime(this,"SDN rules after UMPREDICTED vehicle connection. \n" +
                         "Vehicle: {} \n" +
                         "Predicted-AP: {} \n" +
                         "Actual-AP: {}",connectedVehicle.getVechicleId(),connectedVehicle.getNextRsuId(),rsuApIdInMsg);
@@ -228,15 +229,13 @@ public class ServerVfnControllerApp extends ConfigurableApplication<ServerConfig
         String actualPredictedRsuAP;
         actualPredictedRsuAP = connectedVehicle.getNextRsuId();
         //nextPredictedRsuAP = rsuPredictor.predictNextRsuToVehicle(connectedVehicle); //tendo havido ou não o handover, o predicted Next RSU é recalculado
-        //nextPredictedRsuAP = nextRsuSelector.selectNextRsuToVehicle(connectedVehicle);
-        if(v2xMessage.getMappedMsg().containsKey("nextRsuId")){
+        nextPredictedRsuAP = nextRsuSelector.selectNextRsuToVehicle(connectedVehicle);
+        /*if(v2xMessage.getMappedMsg().containsKey("nextRsuId")){
             nextPredictedRsuAP = v2xMessage.mappedV2xMsg.get("nextRsuId"); //se há mensagem informando o NextRSU, então usá-lo. Se não há, então
         }else{
             nextPredictedRsuAP = actualPredictedRsuAP;
-        }
-
-
-
+        }*/
+        //nextPredictedRsuAP = connectedVehicle.getRsuApId();//sem antecipação de rotas
 
         if(!Objects.equals(nextPredictedRsuAP,actualPredictedRsuAP)){ //Se o Predicted RSU mudou, deve-se fazer um novo caminho para a nova predição
             //houve uma mudança de predição de próxima RSU
