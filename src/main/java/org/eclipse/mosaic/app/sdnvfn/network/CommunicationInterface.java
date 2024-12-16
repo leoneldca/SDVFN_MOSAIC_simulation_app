@@ -25,7 +25,7 @@ public class CommunicationInterface {
         if(!unitOsAccess.getOs().getAdHocModule().isEnabled()){
             this.unitOsAccess.getOs().getAdHocModule().enable(new AdHocModuleConfiguration()
                     .camMinimalPayloadLength(200L)
-                    .addRadio().channel(adHocChannel).distance(radioRange).create()
+                    .addRadio().channel(adHocChannel).distance(radioRange).power(50).create()
             );
         }
 

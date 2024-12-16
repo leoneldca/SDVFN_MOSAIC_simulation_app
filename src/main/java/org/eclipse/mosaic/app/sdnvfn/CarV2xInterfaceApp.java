@@ -31,6 +31,7 @@ import org.eclipse.mosaic.fed.application.app.api.VehicleApplication;
 import org.eclipse.mosaic.fed.application.app.api.os.VehicleOperatingSystem;
 import org.eclipse.mosaic.interactions.communication.V2xMessageTransmission;
 import org.eclipse.mosaic.lib.enums.AdHocChannel;
+import org.eclipse.mosaic.lib.objects.v2x.V2xReceiverInformation;
 import org.eclipse.mosaic.lib.objects.v2x.etsi.Cam;
 import org.eclipse.mosaic.lib.objects.vehicle.VehicleData;
 import org.eclipse.mosaic.lib.util.scheduling.Event;
@@ -96,8 +97,6 @@ public class CarV2xInterfaceApp extends ConfigurableApplication<VehicleConfig,Ve
 
     @Override
     public void onMessageReceived(ReceivedV2xMessage receivedV2xMessage) {
-
-
         if (receivedV2xMessage.getMessage() instanceof Cam) {
             try {
                 Cam camMsg = (Cam)receivedV2xMessage.getMessage();
